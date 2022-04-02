@@ -162,4 +162,10 @@ void main() {
 
   //TODO when no more routes to push, when first route not called, etc. basically all the assertion cases.
   group("Test gesture-based assertions", () {});
+
+  group("Cache test", () {
+    // TODO test that cache retains data between each page.
+    // TODO set up cache in setUp and teardown.
+    (WidgetTester tester) async {};
+  });
 }
