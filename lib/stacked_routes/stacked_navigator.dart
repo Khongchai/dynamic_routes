@@ -35,21 +35,19 @@ class PageDLLData {
 ///
 /// Somewhere in AddressPage
 /// ```dart
-///   StackedNavigator.pushNext(context);
+///   StackedNavigator.pushNext(context, currentWidget: widget);
 /// ```
 ///
 /// Somewhere in OccupationPage
 /// ```dart
-///   StackedRoutesNavigator.pushNext(context);
+///   StackedRoutesNavigator.pushNext(context, currentWidget: widget);
 ///   //or
-///   StackedRoutesNavigator.popCurrent(context);
+///   StackedRoutesNavigator.popCurrent(context, currentWidget: widget);
 /// ```
 ///
 
 //TODO also added a mechanism for passing information
 // TODO detect through the passed props if we are doing things through StackedRoutesNavigator not just using Navigator directly.
-
-// current page can be obtained through this.widget
 class StackedRoutesNavigator {
   /// A map between the widget's hash and the doubly-linked list data it belongs to
   static Map<int, PageDLLData> _pageDataMap = {};
@@ -114,12 +112,6 @@ class StackedRoutesNavigator {
     }
 
     return pageRoutes;
-  }
-
-  static Route? _generateRoute(Widget? page) {
-    if (page == null) return null;
-
-    return MaterialPageRoute(builder: (context) => page);
   }
 
   /// Push the next page in the stack

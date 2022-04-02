@@ -1,6 +1,5 @@
 import 'package:dynamic_routing/pages/page1.dart';
 import 'package:dynamic_routing/pages/page2.dart';
-import 'package:dynamic_routing/pages/page3.dart';
 import 'package:dynamic_routing/pages/page4.dart';
 import 'package:dynamic_routing/pages/page5.dart';
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
@@ -47,13 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            StackedRoutesNavigator.loadStack([
-              const Page1(),
-              const Page2(),
-              const Page3(),
-              const Page4(),
-              const Page5()
-            ]);
+            StackedRoutesNavigator.loadStack(
+                [const Page1(), const Page2(), const Page4(), const Page5()]);
 
             StackedRoutesNavigator.pushFirst(context);
           },

@@ -159,4 +159,7 @@ void main() {
       StackedRoutesNavigator.loadStack(pageStack, strict: false);
     });
   });
+
+  //TODO when no more routes to push, when first route not called, etc. basically all the assertion cases.
+  group("Test gesture-based assertions", () {});
 }
