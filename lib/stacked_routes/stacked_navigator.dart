@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// The states of the current routes
-class PageRouteStates {
-  final Route? previousRoute;
-  final Route currentRoute;
-  final Route? nextRoute;
+/// Hashes for the Widget that is bound to the routes above.
+class PageDLLData {
+  final Widget? previousPage;
+  final Widget currentPage;
+  final Widget? nextPage;
 
-  /// Hashes for the Widget that is bound to the routes above.
-  final int? previousHash;
-  final int currentHash;
-  final int? nextHash;
+  const PageDLLData(
+      {required this.previousPage,
+      required this.currentPage,
+      required this.nextPage});
 
-  const PageRouteStates(
-      {required this.previousRoute,
-      required this.currentRoute,
-      required this.nextRoute,
-      required this.previousHash,
-      required this.currentHash,
-      required this.nextHash});
+  bool isFirstPage() => previousPage == null;
 
-  bool isFirstPage() => previousRoute == null;
-
-  bool isLastPage() => nextRoute == null;
+  bool isLastPage() => nextPage == null;
 }
 
 /// Let's say that your login flow requires the user to fill in their information and the form is split into 5 pages.
@@ -59,10 +51,8 @@ class PageRouteStates {
 
 // current page can be obtained through this.widget
 class StackedRoutesNavigator {
-  /// A map between the widget's hash and the route it belongs too.
-  ///
-  /// This could have been Map<Widget, PageRouteStates>
-  static Map<int, PageRouteStates> _pageRoutes = {};
+  /// A map between the widget's hash and the doubly-linked list data it belongs to
+  static Map<int, PageDLLData> _pageDataMap = {};
 
   /// Kept primarily for debugging purposes
   static int? _currentPageHash;
@@ -72,8 +62,8 @@ class StackedRoutesNavigator {
 
   StackedRoutesNavigator._();
 
-  static List<Route> getCurrentRouteStack() {
-    return _pageRoutes.values.map((e) => e.currentRoute).toList();
+  static List<Widget> getLoadedPages() {
+    return _pageDataMap.values.map((e) => e.currentPage).toList();
   }
 
   /// Returns the page widget that belongs to the current route
@@ -83,7 +73,7 @@ class StackedRoutesNavigator {
 
   static clearStack() {
     _isStackLoaded = false;
-    _pageRoutes = {};
+    _pageDataMap = {};
     _currentPageHash = null;
   }
 
@@ -93,12 +83,12 @@ class StackedRoutesNavigator {
   /// else, this restriction will be lifted (not recommended).
   static loadStack(List<Widget> pages, {bool strict = true}) {
     _isStackLoaded = true;
-    _pageRoutes = _generatePageStates(pages: pages, strict: strict);
+    _pageDataMap = _generatePageStates(pages: pages, strict: strict);
   }
 
-  static Map<int, PageRouteStates> _generatePageStates(
+  static Map<int, PageDLLData> _generatePageStates(
       {required List<Widget> pages, required bool strict}) {
-    final Map<int, PageRouteStates> pageRoutes = {};
+    final Map<int, PageDLLData> pageRoutes = {};
 
     _currentPageHash = pages.first.hashCode;
 
@@ -114,13 +104,10 @@ class StackedRoutesNavigator {
       assert(pageIsMarkedForDynamicRouting || strictModeOff,
           "Strict mode is on, only use pages that use the DynamicRouteParticipator mixin");
 
-      final currentPageStates = PageRouteStates(
-        previousRoute: _generateRoute(previousPage),
-        currentRoute: _generateRoute(currentPage)!,
-        nextRoute: _generateRoute(nextPage),
-        previousHash: previousPage?.hashCode,
-        currentHash: currentPage.hashCode,
-        nextHash: nextPage?.hashCode,
+      final currentPageStates = PageDLLData(
+        previousPage: previousPage,
+        currentPage: currentPage,
+        nextPage: nextPage,
       );
 
       pageRoutes[currentPage.hashCode] = currentPageStates;
@@ -139,12 +126,12 @@ class StackedRoutesNavigator {
   ///
   /// currentWidget is needed to obtain the correct previous and next route in the stack.
   static void pushNext(BuildContext context, {required Widget currentWidget}) {
-    final currentPage = _pageRoutes[currentWidget.hashCode];
+    final currentPageState = _pageDataMap[currentWidget.hashCode];
 
-    assert(currentPage != null,
+    assert(currentPageState != null,
         "The widget provided was not included in the initial array when loadStack() was called.");
     assert(
-        !currentPage!.isLastPage(),
+        !currentPageState!.isLastPage(),
         "There are no more pages to push. This is the end of the flow. "
         "From this page onward, use the Navigator class instead");
     assert(_isStackLoaded,
@@ -152,8 +139,9 @@ class StackedRoutesNavigator {
     assert(_currentPageHash != null,
         "Call pushFirst(context) before the first page of this flow to begin stacked navigation");
 
-    _currentPageHash = currentPage!.nextHash;
-    Navigator.of(context).push(currentPage.nextRoute!);
+    _currentPageHash = currentPageState!.nextPage.hashCode;
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => currentPageState.nextPage!));
   }
 
   /// Push the first page in the stack
@@ -164,14 +152,15 @@ class StackedRoutesNavigator {
         "the loadStack() method should be called first before this can be used.");
 
     // TODO Might need a better way for this because .values is O(n)
-    final firstPage = _pageRoutes.values.first;
-    Navigator.of(context).push(firstPage.currentRoute);
+    final firstPage = _pageDataMap.values.first;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => firstPage.currentPage));
   }
 
   /// Pop the current page from the stack
   static void popCurrent(BuildContext context,
       {required Widget currentWidget}) {
-    final currentPage = _pageRoutes[currentWidget.hashCode];
+    final currentPage = _pageDataMap[currentWidget.hashCode];
 
     assert(currentPage != null,
         "The page this method is called in was not included in the array when loadStack() was called");
@@ -180,7 +169,7 @@ class StackedRoutesNavigator {
     assert(_currentPageHash != null,
         "Call pushFirst(context) before the first page of this flow to begin stacked navigation");
 
-    _currentPageHash = currentPage!.previousHash;
+    _currentPageHash = currentPage!.previousPage.hashCode;
 
     Navigator.pop(context);
   }

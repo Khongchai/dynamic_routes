@@ -45,16 +45,13 @@ final pageStack4 = [
 void main() {
   test("Navigator load test", () {
     StackedRoutesNavigator.loadStack(pageStack1);
-    expect(StackedRoutesNavigator.getCurrentRouteStack().length,
-        pageStack1.length);
+    expect(StackedRoutesNavigator.getLoadedPages().length, pageStack1.length);
 
     StackedRoutesNavigator.loadStack(pageStack2);
-    expect(StackedRoutesNavigator.getCurrentRouteStack().length,
-        pageStack2.length);
+    expect(StackedRoutesNavigator.getLoadedPages().length, pageStack2.length);
 
     StackedRoutesNavigator.loadStack(pageStack3);
-    expect(StackedRoutesNavigator.getCurrentRouteStack().length,
-        pageStack3.length);
+    expect(StackedRoutesNavigator.getLoadedPages().length, pageStack3.length);
   });
 
   group("Navigation test", () {
@@ -106,6 +103,31 @@ void main() {
 
         expect(StackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
+
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[0]); // current: Page1(), next: Page2();
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[1]); // current: Page2(), next: Page3();
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4[2].hashCode);
+      });
+    });
+
+    testWidgets(
+        "Routes push correctly after being interrupted by Navigator.pop()",
+        (WidgetTester tester) async {
+      stubWidgetAndPerformNavigationTest(tester, (context) {
+        StackedRoutesNavigator.pushFirst(context);
+        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[0]);
+        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[1]);
+        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
+
+        Navigator.of(context).pop();
+
+        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
+
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4[3].hashCode);
       });
     });
   });
