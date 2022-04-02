@@ -10,7 +10,8 @@ mixin TestPage<T extends StatefulWidget> on State<T> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
-          onPressed: () => StackedRoutesNavigator.pushNext(context),
+          onPressed: () =>
+              StackedRoutesNavigator.pushNext(context, currentWidget: widget),
           child: const Text("Next Page"),
         ),
       ),
@@ -18,5 +19,4 @@ mixin TestPage<T extends StatefulWidget> on State<T> {
   }
 
   String pageTitle();
-
 }

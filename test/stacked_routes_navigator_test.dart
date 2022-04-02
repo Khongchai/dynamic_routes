@@ -69,15 +69,18 @@ void main() {
       stubWidgetAndPerformNavigationTest(tester, (context) {
         StackedRoutesNavigator.pushFirst(context); // Page1();
 
-        expect(
-            StackedRoutesNavigator.getCurrentRouteWidget(), pageStack4.first);
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4.first.hashCode);
 
-        StackedRoutesNavigator.pushNext(context); // Page2();
-        StackedRoutesNavigator.pushNext(context); // Page3();
-        StackedRoutesNavigator.pushNext(context); // Page4();
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[0]); // current: Page1(), next: Page2();
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[1]); // current: Page2(), next: Page3();
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[2]); // current: Page3(), next: Page4();
 
-        expect(StackedRoutesNavigator.getCurrentRouteWidget(),
-            pageStack4.last); // Page4()
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4.last.hashCode); // Page4()
       });
     });
 
@@ -85,20 +88,24 @@ void main() {
       stubWidgetAndPerformNavigationTest(tester, (context) {
         StackedRoutesNavigator.pushFirst(context); // Page1();
 
-        expect(
-            StackedRoutesNavigator.getCurrentRouteWidget(), pageStack4.first);
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4.first.hashCode);
 
-        StackedRoutesNavigator.pushNext(context); // Page2();
-        StackedRoutesNavigator.pushNext(context); // Page3();
-        StackedRoutesNavigator.popCurrent(context); // Page2();
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[0]); // current: Page1(), next: Page2();
+        StackedRoutesNavigator.pushNext(context,
+            currentWidget: pageStack4[1]); // current: Page2(), next: Page3();
+        StackedRoutesNavigator.popCurrent(context,
+            currentWidget: pageStack4[2]); // current: Page3(), next: Page2();
 
-        expect(StackedRoutesNavigator.getCurrentRouteWidget(),
-            pageStack4[1]); // Page4()
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4[1].hashCode);
 
-        StackedRoutesNavigator.popCurrent(context); // Page1();
+        StackedRoutesNavigator.popCurrent(context,
+            currentWidget: pageStack4[1]); // current: Page2(), next: Page1();
 
-        expect(
-            StackedRoutesNavigator.getCurrentRouteWidget(), pageStack4.first);
+        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+            pageStack4.first.hashCode);
       });
     });
   });
