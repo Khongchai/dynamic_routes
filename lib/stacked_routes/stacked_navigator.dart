@@ -82,7 +82,7 @@ class _ParticipatorNavigator implements ParticipatorNavigator {
   }
 }
 
-/// Hashes for the Widget that is bound to the routes above.
+/// The doubly-linked-list-kind-of representation that is used to help ensure that the next page that is pushed is the correct one.
 class PageDLLData {
   final Widget? previousPage;
   final Widget currentPage;
