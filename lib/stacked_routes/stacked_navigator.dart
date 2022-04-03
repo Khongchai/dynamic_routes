@@ -100,8 +100,6 @@ class PageDLLData {
 
 abstract class StackedRoutesNavigatorCleaner {
   /// reset all data
-  ///
-  /// You should push
   void clearData();
 }
 
