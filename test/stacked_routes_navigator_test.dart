@@ -125,7 +125,7 @@ void main() {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.last.hashCode); // Page4()
 
-        stackedRoutesNavigator.cleanUp();
+        stackedRoutesNavigator.clearData();
       });
     });
 
@@ -165,7 +165,7 @@ void main() {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[2].hashCode);
 
-        stackedRoutesNavigator.cleanUp();
+        stackedRoutesNavigator.clearData();
       });
     });
 
@@ -191,7 +191,7 @@ void main() {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[3].hashCode);
 
-        stackedRoutesNavigator.cleanUp();
+        stackedRoutesNavigator.clearData();
       });
     });
   });
@@ -266,7 +266,7 @@ void main() {
       //   expect(
       //       cachedData["some-other-key"], mockCacheData["some-other-key"]! + 1);
       //
-      //   StackedRoutesNavigator.cleanUp();
+      //   StackedRoutesNavigator.clearData();
       // });
     };
   });

@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 
 /// Concrete singleton implementation
-class _StackedRoutesSingletonImpl extends _StackedRoutesNavigatorImpl {
-  static final _singletonInstance = _StackedRoutesSingletonImpl._();
+///
+class StackedRoutesSingleton extends _StackedRoutesNavigatorImpl {
+  static final _singletonInstance = StackedRoutesSingleton._();
 
-  _StackedRoutesSingletonImpl._();
+  StackedRoutesSingleton._();
 
-  factory _StackedRoutesSingletonImpl() => _singletonInstance;
+  factory StackedRoutesSingleton() => _singletonInstance;
 }
 
 /// Initiator mixin
+///
 mixin StackedRoutesInitiator {
   final InitiatorNavigator stackedRoutesNavigator = _InitiatorNavigator();
 }
 
 class _InitiatorNavigator implements InitiatorNavigator {
-  final _StackedRoutesSingletonImpl _stackedRoutesNavigator =
-      _StackedRoutesSingletonImpl();
+  final StackedRoutesSingleton _stackedRoutesNavigator =
+      StackedRoutesSingleton();
 
   @override
   loadStack(List<Widget> pages, {bool strict = true}) {
@@ -34,18 +36,33 @@ class _InitiatorNavigator implements InitiatorNavigator {
   }
 }
 
+mixin StackedRoutesCleaner {
+  final StackedRoutesNavigatorCleaner stackedRoutesNavigator =
+      _StackedRoutesCleaner();
+}
+
+class _StackedRoutesCleaner implements StackedRoutesNavigatorCleaner {
+  final StackedRoutesSingleton _stackedRoutesNavigator =
+      StackedRoutesSingleton();
+
+  @override
+  void clearData() {
+    _stackedRoutesNavigator.clearData();
+  }
+}
+
 /// Participator mixin
 mixin StackedRoutesParticipator {
   final ParticipatorNavigator stackedRoutesNavigator = _ParticipatorNavigator();
 }
 
 class _ParticipatorNavigator implements ParticipatorNavigator {
-  final _StackedRoutesSingletonImpl _stackedRoutesNavigator =
-      _StackedRoutesSingletonImpl();
+  final StackedRoutesSingleton _stackedRoutesNavigator =
+      StackedRoutesSingleton();
 
   @override
-  void cleanUp() {
-    _stackedRoutesNavigator.cleanUp();
+  void clearData() {
+    _stackedRoutesNavigator.clearData();
   }
 
   @override
@@ -81,6 +98,11 @@ class PageDLLData {
   bool isLastPage() => nextPage == null;
 }
 
+abstract class StackedRoutesNavigatorCleaner {
+  /// reset all data
+  void clearData();
+}
+
 abstract class InitiatorNavigator {
   /// Can pass as an optional parameter whether or not to be strict about pages that get loaded onto the navigation stack.
   ///
@@ -96,12 +118,9 @@ abstract class InitiatorNavigator {
   List<Widget> getLoadedPages();
 }
 
-abstract class ParticipatorNavigator {
+abstract class ParticipatorNavigator implements StackedRoutesNavigatorCleaner {
   /// Returns the page widget that belongs to the current route
   int? getCurrentWidgetHash();
-
-  /// clean up all the data.
-  void cleanUp();
 
   /// Push the next page in the stack
   ///
@@ -126,54 +145,57 @@ abstract class ParticipatorNavigator {
 /// For the page directly before the flow, we'll have to mark it with the StackedRoutesInitiator.
 ///
 /// ```dart
-///
 /// class SomeWidget extends StatefulWidget with StackedRouteInitiator{
-///  //...
+///  //...some code
 /// }
 ///
 /// class _SomeWidgetState extends State<Page4> {
 ///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentWidget: widget);
-///
-///    //... build methods and whatever
+///   //...some code
 /// }
-///
 /// ```
 ///
 /// And then in the pages that will be included within the stack
 ///
 /// ```dart
-///
 /// class SomeWidget extends StatefulWidget with StackedRoutesParticipator{
-///
-///  ...//
+///   //...some code
 /// }
 ///
 /// class _SomeWidgetState extends State<Page4> {
 ///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentWidget: widget);
-///
-///    ...// build methods and whatever
+///    //...build methods and whatever
 /// }
 ///```
 ///
-/// Don't forget to reset the data with the cleanUp method at the last page in the flow.
+/// Don't forget to reset the data with the clearData method at the last page in the flow.
 ///
 /// ```dart
 /// class SomeLastWidget extends StatefulWidget with StackedRoutesParticipator{
 /// }
-///
 /// class _SomeLastWidgetState extends State<Page4> {
 ///   void onButtonPressed() {
-///     widget.stackedRoutesNavigator.cleanUp();
+///     widget.stackedRoutesNavigator.clearData();
 ///
 ///     // No more pages to push so here, so from this page forward, we'll go back to using Navigator.
 ///     Navigator.of(context).pushNamed(...);
 ///   };
-///
 /// }
 ///```
 ///
+/// Or if the last page of this flow is not really the last page in a bigger flow, eg. even after the last page in the stack
+/// there exist still a possibility for the user to return to this page, then you can opt out of cleaning up the data and do that later.
+/// By implementing the StackedRoutesNavigatorCleaner mixin, the class will have access to the clearData() method which can be use to reset the
+/// stack's singleton data to the default values.
+///
+/// This is, however, entirely optional as the next time the StackedRoutesNavigator singleton instance is used, all values will be rewritten anyway.
+///
+///
 abstract class StackedRoutesNavigator
-    implements InitiatorNavigator, ParticipatorNavigator {
+    implements
+        InitiatorNavigator,
+        ParticipatorNavigator,
+        StackedRoutesNavigatorCleaner {
   /// A map between the widget's hash and the doubly-linked list data it belongs to
   @protected
   late Map<int, PageDLLData> pageDataMap = {};
@@ -200,7 +222,7 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   }
 
   @override
-  cleanUp() {
+  clearData() {
     isStackLoaded = false;
     pageDataMap = {};
     currentPageHash = null;
