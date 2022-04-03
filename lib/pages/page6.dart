@@ -24,8 +24,9 @@ class _Page6State extends State<Page6> {
           // Now, once that action is complete, we can clear the previous stack by calling cleanUp()
           onPressed: () {
             widget.stackedRoutesNavigator.clearData();
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const MyApp()));
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const MyApp()),
+                (route) => false);
           },
           child: const Text("Clean up and go back to main"),
         ),

@@ -100,6 +100,8 @@ class PageDLLData {
 
 abstract class StackedRoutesNavigatorCleaner {
   /// reset all data
+  ///
+  /// You should push
   void clearData();
 }
 
@@ -187,6 +189,10 @@ abstract class ParticipatorNavigator implements StackedRoutesNavigatorCleaner {
 /// there exist still a possibility for the user to return to this page, then you can opt out of cleaning up the data and do that later.
 /// By implementing the StackedRoutesNavigatorCleaner mixin, the class will have access to the clearData() method which can be use to reset the
 /// stack's singleton data to the default values.
+///
+/// Navigator.of(context).pushAndRemoveUntil is a good example of why you might need the clearData() method to help you clear out all data from ram.
+/// When all routes are removed, indeed routes are popped from the Navigator stack, but the StackedRoutesNavigator mirrors that relationship with an abstraction
+/// that lives in the ram. Flutter doesn't know that this singleton needs to be garbage-collected, so we will have to do that by hand.
 ///
 /// This is, however, entirely optional as the next time the StackedRoutesNavigator singleton instance is used, all values will be rewritten anyway.
 ///
