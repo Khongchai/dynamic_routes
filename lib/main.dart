@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget with StackedRoutesParticipator {
+class MyHomePage extends StatefulWidget with StackedRoutesInitiator {
   MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;

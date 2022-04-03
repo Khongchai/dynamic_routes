@@ -8,13 +8,12 @@ import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import 'package:flutter/material.dart';
 import "package:flutter_test/flutter_test.dart";
 
-class _TestWidgetForNavigationStubbing extends StatelessWidget
-    with StackedRoutesParticipator {
+class _InitiatorWidgetStub extends StatelessWidget with StackedRoutesInitiator {
   final Function(
-          BuildContext context, StackedRoutesNavigator stackedRoutesNavigator)
+          BuildContext context, InitiatorNavigator stackedRoutesNavigator)
       postBuildCallback;
 
-  _TestWidgetForNavigationStubbing({required this.postBuildCallback, Key? key})
+  _InitiatorWidgetStub({required this.postBuildCallback, Key? key})
       : super(key: key);
 
   @override
@@ -30,12 +29,40 @@ class _TestWidgetForNavigationStubbing extends StatelessWidget
   }
 }
 
-Future<void> stubMaterialWidget(WidgetTester tester,
+Future<void> stubInitiatorWidget(WidgetTester tester,
     {required Function(
-            BuildContext context, StackedRoutesNavigator stackedRoutesNavigator)
+            BuildContext context, InitiatorNavigator initiatorNavigator)
         andThen}) async {
-  await tester
-      .pumpWidget(_TestWidgetForNavigationStubbing(postBuildCallback: andThen));
+  await tester.pumpWidget(_InitiatorWidgetStub(postBuildCallback: andThen));
+}
+
+class _ParticipatorWidgetStub extends StatelessWidget
+    with StackedRoutesParticipator {
+  final Function(
+          BuildContext context, ParticipatorNavigator participatorNavigator)
+      postBuildCallback;
+
+  _ParticipatorWidgetStub({required this.postBuildCallback, Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(builder: (context) {
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          postBuildCallback(context, stackedRoutesNavigator);
+        });
+        return Container();
+      }),
+    );
+  }
+}
+
+Future<void> stubParticipatorWidget(WidgetTester tester,
+    {required Function(
+            BuildContext context, ParticipatorNavigator stackedRoutesNavigator)
+        andThen}) async {
+  await tester.pumpWidget(_ParticipatorWidgetStub(postBuildCallback: andThen));
 }
 
 final pageStack1 = [
@@ -62,7 +89,7 @@ final pageStack4 = [
 
 void main() {
   testWidgets("Navigator load test", (WidgetTester tester) async {
-    stubMaterialWidget(tester,
+    stubInitiatorWidget(tester,
         andThen: (context, stackedRoutesNavigator) async {
       stackedRoutesNavigator.loadStack(pageStack1);
       expect(stackedRoutesNavigator.getLoadedPages().length, pageStack1.length);
@@ -77,11 +104,14 @@ void main() {
 
   group("Navigation test", () {
     testWidgets("Routes push correctly", (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
-        stackedRoutesNavigator.loadStack(pageStack4);
+      await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
+        initiatorNavigator.loadStack(pageStack4);
 
-        stackedRoutesNavigator.pushFirst(context); // Page1();
+        initiatorNavigator.pushFirst(context); // Page1();
+      });
 
+      await stubParticipatorWidget(tester,
+          andThen: (context, stackedRoutesNavigator) {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
 
@@ -100,11 +130,15 @@ void main() {
     });
 
     testWidgets("Routes pop correctly", (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
-        stackedRoutesNavigator.loadStack(pageStack4);
+      await stubInitiatorWidget(tester,
+          andThen: ((context, initiatorNavigator) {
+        initiatorNavigator.loadStack(pageStack4);
 
-        stackedRoutesNavigator.pushFirst(context); // Page1();
+        initiatorNavigator.pushFirst(context); // Page1();
+      }));
 
+      await stubParticipatorWidget(tester,
+          andThen: (context, stackedRoutesNavigator) {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
 
@@ -138,10 +172,14 @@ void main() {
     testWidgets(
         "Routes push correctly after being interrupted by Navigator.pop()",
         (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
-        stackedRoutesNavigator.loadStack(pageStack4);
+      await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
+        initiatorNavigator.loadStack(pageStack4);
 
-        stackedRoutesNavigator.pushFirst(context);
+        initiatorNavigator.pushFirst(context);
+      });
+
+      await stubParticipatorWidget(tester,
+          andThen: (context, stackedRoutesNavigator) {
         stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[0]);
         stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[1]);
         stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
@@ -161,7 +199,7 @@ void main() {
   group("Dynamic route safeguard", () {
     testWidgets("throws assertion error when strict is true",
         (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+      await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
         final pageStack = [
           Page1(),
           Page2(),
@@ -170,14 +208,15 @@ void main() {
         ];
 
         // true is the default value
-        expect(() => stackedRoutesNavigator.loadStack(pageStack),
+        expect(() => initiatorNavigator.loadStack(pageStack),
             throwsAssertionError);
       });
     });
 
     testWidgets("does not throw any error when strict is false ",
         (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+      await stubInitiatorWidget(tester,
+          andThen: (context, stackedRouteInitiator) {
         final pageStack = [
           Page1(),
           Page2(),
@@ -185,10 +224,11 @@ void main() {
           const NonStackedRouteParticipatingPage(),
         ];
 
-        stackedRoutesNavigator.loadStack(pageStack, strict: false);
+        stackedRouteInitiator.loadStack(pageStack, strict: false);
       });
     });
   });
+  //TODO test for the initiator
 
   //TODO when no more routes to push, when first route not called, etc. basically all the assertion cases.
   group("Test gesture-based assertions", () {});
