@@ -8,16 +8,30 @@ import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import 'package:flutter/material.dart';
 import "package:flutter_test/flutter_test.dart";
 
-Future<void> stubWidgetAndPerformNavigationTest(
-    WidgetTester tester, Function(BuildContext context) doStuff) async {
-  await tester.pumpWidget(MaterialApp(
-    home: Builder(builder: (context) {
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
-        doStuff(context);
-      });
-      return Container();
-    }),
-  ));
+class _TestWidgetForNavigationStubbing extends StatelessWidget {
+  final Function(BuildContext context) postBuildCallback;
+
+  const _TestWidgetForNavigationStubbing(
+      {required this.postBuildCallback, Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(builder: (context) {
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          postBuildCallback(context);
+        });
+        return Container();
+      }),
+    );
+  }
+}
+
+Future<void> stubMaterialWidget(WidgetTester tester,
+    {required Function(BuildContext context) andThen}) async {
+  await tester
+      .pumpWidget(_TestWidgetForNavigationStubbing(postBuildCallback: andThen));
 }
 
 final pageStack1 = [
@@ -59,11 +73,11 @@ void main() {
       StackedRoutesNavigator.loadStack(pageStack4);
     });
     tearDown(() {
-      StackedRoutesNavigator.clearStack();
+      StackedRoutesNavigator.cleanUp();
     });
 
     testWidgets("Routes push correctly", (WidgetTester tester) async {
-      stubWidgetAndPerformNavigationTest(tester, (context) {
+      stubMaterialWidget(tester, andThen: (context) {
         StackedRoutesNavigator.pushFirst(context); // Page1();
 
         expect(StackedRoutesNavigator.getCurrentWidgetHash(),
@@ -82,7 +96,7 @@ void main() {
     });
 
     testWidgets("Routes pop correctly", (WidgetTester tester) async {
-      stubWidgetAndPerformNavigationTest(tester, (context) {
+      stubMaterialWidget(tester, andThen: (context) {
         StackedRoutesNavigator.pushFirst(context); // Page1();
 
         expect(StackedRoutesNavigator.getCurrentWidgetHash(),
@@ -116,7 +130,7 @@ void main() {
     testWidgets(
         "Routes push correctly after being interrupted by Navigator.pop()",
         (WidgetTester tester) async {
-      stubWidgetAndPerformNavigationTest(tester, (context) {
+      stubMaterialWidget(tester, andThen: (context) {
         StackedRoutesNavigator.pushFirst(context);
         StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[0]);
         StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[1]);
@@ -164,8 +178,40 @@ void main() {
   group("Test gesture-based assertions", () {});
 
   group("Cache test", () {
-    // TODO test that cache retains data between each page.
-    // TODO set up cache in setUp and teardown.
-    (WidgetTester tester) async {};
+    (WidgetTester tester) async {
+      // //Assign a value to the routeCache in the first page
+      // final mockCacheData = {"some-key": 1, "some-other-key": 2};
+      // StackedRoutesNavigator.loadStack(pageStack1, routeCache: mockCacheData);
+      //
+      // stubWidgetAndPerformNavigationTest(tester, (context) {
+      //   // Push the first page
+      //   StackedRoutesNavigator.pushFirst(context);
+      //
+      //   // Push the second page
+      //   StackedRoutesNavigator.pushNext(context,
+      //       currentWidget: pageStack1.first);
+      //
+      //   // Read data from cache in the second page
+      //   final cachedData = StackedRoutesNavigator.getRouteCacheData();
+      //
+      //   expect(cachedData["some-key"], mockCacheData["some-key"]);
+      //   expect(cachedData["some-other-key"], mockCacheData["some-other-key"]);
+      //
+      //   // Do something with the data and update the routeCache
+      //   cachedData["some-key"]++;
+      //   cachedData["some-other-key"]++;
+      //   StackedRoutesNavigator.pushNext(context,
+      //       currentWidget: pageStack1[1], routeCache: cachedData);
+      //
+      //   expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+      //       const Page3().hashCode);
+      //
+      //   expect(cachedData["some-key"], mockCacheData["some-key"]! + 1);
+      //   expect(
+      //       cachedData["some-other-key"], mockCacheData["some-other-key"]! + 1);
+      //
+      //   StackedRoutesNavigator.cleanUp();
+      // });
+    };
   });
 }

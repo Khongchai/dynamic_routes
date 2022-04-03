@@ -69,7 +69,7 @@ class StackedRoutesNavigator {
     return _currentPageHash;
   }
 
-  static clearStack() {
+  static cleanUp() {
     _isStackLoaded = false;
     _pageDataMap = {};
     _currentPageHash = null;
