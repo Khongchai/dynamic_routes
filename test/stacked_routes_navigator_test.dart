@@ -8,11 +8,13 @@ import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import 'package:flutter/material.dart';
 import "package:flutter_test/flutter_test.dart";
 
-class _TestWidgetForNavigationStubbing extends StatelessWidget {
-  final Function(BuildContext context) postBuildCallback;
+class _TestWidgetForNavigationStubbing extends StatelessWidget
+    with StackedRoutesParticipator {
+  final Function(
+          BuildContext context, StackedRoutesNavigator stackedRoutesNavigator)
+      postBuildCallback;
 
-  const _TestWidgetForNavigationStubbing(
-      {required this.postBuildCallback, Key? key})
+  _TestWidgetForNavigationStubbing({required this.postBuildCallback, Key? key})
       : super(key: key);
 
   @override
@@ -20,7 +22,7 @@ class _TestWidgetForNavigationStubbing extends StatelessWidget {
     return MaterialApp(
       home: Builder(builder: (context) {
         WidgetsBinding.instance?.addPostFrameCallback((_) {
-          postBuildCallback(context);
+          postBuildCallback(context, stackedRoutesNavigator);
         });
         return Container();
       }),
@@ -29,119 +31,129 @@ class _TestWidgetForNavigationStubbing extends StatelessWidget {
 }
 
 Future<void> stubMaterialWidget(WidgetTester tester,
-    {required Function(BuildContext context) andThen}) async {
+    {required Function(
+            BuildContext context, StackedRoutesNavigator stackedRoutesNavigator)
+        andThen}) async {
   await tester
       .pumpWidget(_TestWidgetForNavigationStubbing(postBuildCallback: andThen));
 }
 
 final pageStack1 = [
-  const Page1(),
-  const Page2(),
-  const Page3(),
-  const Page5(),
+  Page1(),
+  Page2(),
+  Page3(),
+  Page5(),
 ];
 final pageStack2 = [
-  const Page1(),
-  const Page3(),
-  const Page5(),
+  Page1(),
+  Page3(),
+  Page5(),
 ];
 final pageStack3 = [
-  const Page5(),
+  Page5(),
 ];
 
 final pageStack4 = [
-  const Page1(),
-  const Page2(),
-  const Page3(),
-  const Page4(),
+  Page1(),
+  Page2(),
+  Page3(),
+  Page4(),
 ];
 
 void main() {
-  test("Navigator load test", () {
-    StackedRoutesNavigator.loadStack(pageStack1);
-    expect(StackedRoutesNavigator.getLoadedPages().length, pageStack1.length);
+  testWidgets("Navigator load test", (WidgetTester tester) async {
+    stubMaterialWidget(tester,
+        andThen: (context, stackedRoutesNavigator) async {
+      stackedRoutesNavigator.loadStack(pageStack1);
+      expect(stackedRoutesNavigator.getLoadedPages().length, pageStack1.length);
 
-    StackedRoutesNavigator.loadStack(pageStack2);
-    expect(StackedRoutesNavigator.getLoadedPages().length, pageStack2.length);
+      stackedRoutesNavigator.loadStack(pageStack2);
+      expect(stackedRoutesNavigator.getLoadedPages().length, pageStack2.length);
 
-    StackedRoutesNavigator.loadStack(pageStack3);
-    expect(StackedRoutesNavigator.getLoadedPages().length, pageStack3.length);
+      stackedRoutesNavigator.loadStack(pageStack3);
+      expect(stackedRoutesNavigator.getLoadedPages().length, pageStack3.length);
+    });
   });
 
   group("Navigation test", () {
-    setUp(() {
-      StackedRoutesNavigator.loadStack(pageStack4);
-    });
-    tearDown(() {
-      StackedRoutesNavigator.cleanUp();
-    });
-
     testWidgets("Routes push correctly", (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context) {
-        StackedRoutesNavigator.pushFirst(context); // Page1();
+      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+        stackedRoutesNavigator.loadStack(pageStack4);
 
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        stackedRoutesNavigator.pushFirst(context); // Page1();
+
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
 
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[0]); // current: Page1(), next: Page2();
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[1]); // current: Page2(), next: Page3();
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[2]); // current: Page3(), next: Page4();
 
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.last.hashCode); // Page4()
+
+        stackedRoutesNavigator.cleanUp();
       });
     });
 
     testWidgets("Routes pop correctly", (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context) {
-        StackedRoutesNavigator.pushFirst(context); // Page1();
+      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+        stackedRoutesNavigator.loadStack(pageStack4);
 
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        stackedRoutesNavigator.pushFirst(context); // Page1();
+
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
 
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[0]); // current: Page1(), next: Page2();
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[1]); // current: Page2(), next: Page3();
-        StackedRoutesNavigator.popCurrent(context,
+        stackedRoutesNavigator.popCurrent(context,
             currentWidget: pageStack4[2]); // current: Page3(), next: Page2();
 
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[1].hashCode);
 
-        StackedRoutesNavigator.popCurrent(context,
+        stackedRoutesNavigator.popCurrent(context,
             currentWidget: pageStack4[1]); // current: Page2(), next: Page1();
 
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
 
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[0]); // current: Page1(), next: Page2();
-        StackedRoutesNavigator.pushNext(context,
+        stackedRoutesNavigator.pushNext(context,
             currentWidget: pageStack4[1]); // current: Page2(), next: Page3();
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[2].hashCode);
+
+        stackedRoutesNavigator.cleanUp();
       });
     });
 
     testWidgets(
         "Routes push correctly after being interrupted by Navigator.pop()",
         (WidgetTester tester) async {
-      stubMaterialWidget(tester, andThen: (context) {
-        StackedRoutesNavigator.pushFirst(context);
-        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[0]);
-        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[1]);
-        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
+      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+        stackedRoutesNavigator.loadStack(pageStack4);
+
+        stackedRoutesNavigator.pushFirst(context);
+        stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[0]);
+        stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[1]);
+        stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
 
         Navigator.of(context).pop();
 
-        StackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
+        stackedRoutesNavigator.pushNext(context, currentWidget: pageStack4[2]);
 
-        expect(StackedRoutesNavigator.getCurrentWidgetHash(),
+        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[3].hashCode);
+
+        stackedRoutesNavigator.cleanUp();
       });
     });
   });
@@ -149,28 +161,32 @@ void main() {
   group("Dynamic route safeguard", () {
     testWidgets("throws assertion error when strict is true",
         (WidgetTester tester) async {
-      final pageStack = [
-        const Page1(),
-        const Page2(),
-        const Page3(),
-        const NonDynamicRouteParticipatingPage(),
-      ];
+      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+        final pageStack = [
+          Page1(),
+          Page2(),
+          Page3(),
+          const NonStackedRouteParticipatingPage(),
+        ];
 
-      // true is the default value
-      expect(() => StackedRoutesNavigator.loadStack(pageStack),
-          throwsAssertionError);
+        // true is the default value
+        expect(() => stackedRoutesNavigator.loadStack(pageStack),
+            throwsAssertionError);
+      });
     });
 
     testWidgets("does not throw any error when strict is false ",
         (WidgetTester tester) async {
-      final pageStack = [
-        const Page1(),
-        const Page2(),
-        const Page3(),
-        const NonDynamicRouteParticipatingPage(),
-      ];
+      stubMaterialWidget(tester, andThen: (context, stackedRoutesNavigator) {
+        final pageStack = [
+          Page1(),
+          Page2(),
+          Page3(),
+          const NonStackedRouteParticipatingPage(),
+        ];
 
-      StackedRoutesNavigator.loadStack(pageStack, strict: false);
+        stackedRoutesNavigator.loadStack(pageStack, strict: false);
+      });
     });
   });
 

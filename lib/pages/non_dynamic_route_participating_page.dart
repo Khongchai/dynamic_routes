@@ -1,18 +1,18 @@
-import 'package:dynamic_routing/pages/page_mixin.dart';
 import "package:flutter/material.dart";
 
-class NonDynamicRouteParticipatingPage extends StatefulWidget {
-  const NonDynamicRouteParticipatingPage({Key? key}) : super(key: key);
+class NonStackedRouteParticipatingPage extends StatefulWidget {
+  const NonStackedRouteParticipatingPage({Key? key}) : super(key: key);
 
   @override
-  State<NonDynamicRouteParticipatingPage> createState() =>
-      _NonDynamicRouteParticipatingPageState();
+  State<NonStackedRouteParticipatingPage> createState() =>
+      _NonStackedRouteParticipatingPageState();
 }
 
-class _NonDynamicRouteParticipatingPageState
-    extends State<NonDynamicRouteParticipatingPage> with TestPage {
+class _NonStackedRouteParticipatingPageState
+    extends State<NonStackedRouteParticipatingPage> {
   @override
-  String pageTitle() {
-    return "Not a dynamic route participator";
+  Widget build(BuildContext context) {
+    return const Text(
+        "This page does not participate in the stacked routes navigation");
   }
 }

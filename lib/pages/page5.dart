@@ -1,9 +1,8 @@
 import 'package:dynamic_routing/pages/page_mixin.dart';
-import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import "package:flutter/material.dart";
 
-class Page5 extends StatefulWidget with DynamicRouteParticipator {
-  const Page5({Key? key}) : super(key: key);
+class Page5 extends DynamicRouteParticipatingStatefulWidget {
+  Page5({Key? key}) : super(key: key);
 
   @override
   State<Page5> createState() => _Page5State();

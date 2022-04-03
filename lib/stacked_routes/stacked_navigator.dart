@@ -16,60 +16,29 @@ class PageDLLData {
   bool isLastPage() => nextPage == null;
 }
 
-/// Let's say that your login flow requires the user to fill in their information and the form is split into 5 pages.
-/// However, some of the information in those 5 pages can also be pre-obtained through other means, which would render
-/// some of the pages in this flow unnecessary.
-///
-/// The solution would be to have a stacked navigator that we can just say push this set of pages in order.
-///
-/// Instructions:
-///
-/// _In pages that are marked with the DynamicRouteParticipator mixin._
-///
-/// Somewhere in the page right before AddressPage
-///
-/// ```dart
-///   StackedNavigator.loadStack([AddressPage, OccupationPage, XPage, XXPage]);
-///   StackedNavigator.pushFirst(context);
-///```
-///
-/// Somewhere in AddressPage
-/// ```dart
-///   StackedNavigator.pushNext(context, currentWidget: widget);
-/// ```
-///
-/// Somewhere in OccupationPage
-/// ```dart
-///   StackedRoutesNavigator.pushNext(context, currentWidget: widget);
-///   //or
-///   StackedRoutesNavigator.popCurrent(context, currentWidget: widget);
-/// ```
-///
-
 //TODO also added a mechanism for passing information
 // TODO detect through the passed props if we are doing things through StackedRoutesNavigator not just using Navigator directly.
+// TODO Make an abstract class for this and expose that globally instead
 class StackedRoutesNavigator {
   /// A map between the widget's hash and the doubly-linked list data it belongs to
-  static Map<int, PageDLLData> _pageDataMap = {};
+  Map<int, PageDLLData> _pageDataMap = {};
 
   /// Kept primarily for debugging purposes
-  static int? _currentPageHash;
+  int? _currentPageHash;
 
   /// Use as a safeguard to prevent this being used before the states are loaded.
-  static bool _isStackLoaded = false;
+  bool _isStackLoaded = false;
 
-  StackedRoutesNavigator._();
-
-  static List<Widget> getLoadedPages() {
+  List<Widget> getLoadedPages() {
     return _pageDataMap.values.map((e) => e.currentPage).toList();
   }
 
   /// Returns the page widget that belongs to the current route
-  static int? getCurrentWidgetHash() {
+  int? getCurrentWidgetHash() {
     return _currentPageHash;
   }
 
-  static cleanUp() {
+  cleanUp() {
     _isStackLoaded = false;
     _pageDataMap = {};
     _currentPageHash = null;
@@ -79,12 +48,12 @@ class StackedRoutesNavigator {
   ///
   /// If true(default value), pages that can participate will have to use the DynamicRouteParticipator mixin.
   /// else, this restriction will be lifted (not recommended).
-  static loadStack(List<Widget> pages, {bool strict = true}) {
+  loadStack(List<Widget> pages, {bool strict = true}) {
     _isStackLoaded = true;
     _pageDataMap = _generatePageStates(pages: pages, strict: strict);
   }
 
-  static Map<int, PageDLLData> _generatePageStates(
+  Map<int, PageDLLData> _generatePageStates(
       {required List<Widget> pages, required bool strict}) {
     final Map<int, PageDLLData> pageRoutes = {};
 
@@ -96,7 +65,7 @@ class StackedRoutesNavigator {
       final currentPage = pages[i];
 
       final pageIsMarkedForDynamicRouting =
-          currentPage is DynamicRouteParticipator;
+          currentPage is StackedRoutesParticipator;
       final strictModeOff = !strict;
 
       assert(pageIsMarkedForDynamicRouting || strictModeOff,
@@ -117,7 +86,7 @@ class StackedRoutesNavigator {
   /// Push the next page in the stack
   ///
   /// currentWidget is needed to obtain the correct previous and next route in the stack.
-  static void pushNext(BuildContext context, {required Widget currentWidget}) {
+  void pushNext(BuildContext context, {required Widget currentWidget}) {
     final currentPageState = _pageDataMap[currentWidget.hashCode];
 
     assert(currentPageState != null,
@@ -139,7 +108,7 @@ class StackedRoutesNavigator {
   /// Push the first page in the stack
   ///
   /// This is called in the page before the first page included in the navigation stack.
-  static void pushFirst(BuildContext context) {
+  void pushFirst(BuildContext context) {
     assert(_isStackLoaded,
         "the loadStack() method should be called first before this can be used.");
 
@@ -150,8 +119,7 @@ class StackedRoutesNavigator {
   }
 
   /// Pop the current page from the stack
-  static void popCurrent(BuildContext context,
-      {required Widget currentWidget}) {
+  void popCurrent(BuildContext context, {required Widget currentWidget}) {
     final currentPage = _pageDataMap[currentWidget.hashCode];
 
     assert(currentPage != null,
@@ -167,5 +135,43 @@ class StackedRoutesNavigator {
   }
 }
 
-/// For pages that are to be navigated with the StackedNavigator -- pages that gets put in the array
-mixin DynamicRouteParticipator {}
+class _StackedRoutesSingletonImpl extends StackedRoutesNavigator {
+  static final _singletonInstance = _StackedRoutesSingletonImpl._();
+
+  _StackedRoutesSingletonImpl._();
+
+  factory _StackedRoutesSingletonImpl() => _singletonInstance;
+}
+
+/// Let's say that your login flow requires the user to fill in their information and the form is split into 5 pages.
+/// However, some of the information in those 5 pages can also be pre-obtained through other means, which would render
+/// some of the pages in this flow unnecessary.
+///
+/// The solution would be to have a stacked navigator that we can just say push this set of pages in order.
+///
+/// ## Instructions:
+///
+/// First, we'd need to mark the participating page with the DynamicRouteParticipator mixin. This would give that component access to the stackedRoutesNavigator singleton.
+///
+/// ```dart
+/// class SomeWidget extends StatefulWidget with DynamicRouteParticipator{
+///  ...
+/// }
+///
+/// class _SomeWidgetState extends State<Page4> {
+///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentWidget: widget);
+///
+///    ...// build methods and whatever
+/// }
+///```
+mixin StackedRoutesParticipator {
+  final _StackedRoutesSingletonImpl stackedRoutesNavigator =
+      _StackedRoutesSingletonImpl();
+}
+
+mixin StackedRoutesInitiator {
+  final _StackedRoutesSingletonImpl _stackedRoutesNavigator =
+      _StackedRoutesSingletonImpl();
+}
+
+mixin StackedRoutesFinalRoute {}
