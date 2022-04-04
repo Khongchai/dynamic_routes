@@ -135,8 +135,6 @@ void main() {
 
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.last.hashCode); // Page4()
-
-        stackedRoutesNavigator.dispose();
       });
     });
 
@@ -175,8 +173,6 @@ void main() {
             currentPage: pageStack4[1]); // current: Page2(), next: Page3();
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[2].hashCode);
-
-        stackedRoutesNavigator.dispose();
       });
     });
 
@@ -232,8 +228,6 @@ void main() {
 
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[3].hashCode);
-
-        stackedRoutesNavigator.dispose();
       });
     });
   });

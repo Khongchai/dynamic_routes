@@ -38,6 +38,11 @@ class _InitiatorNavigator implements InitiatorNavigator {
   List<Widget> getLoadedPages() {
     return _stackedRoutesNavigator.getLoadedPages();
   }
+
+  @override
+  dispose() {
+    _stackedRoutesNavigator.dispose();
+  }
 }
 
 /// Participator mixin
@@ -53,11 +58,6 @@ mixin StackedRoutesParticipator<T extends StatefulWidget> on State<T> {
 class _ParticipatorNavigator implements ParticipatorNavigator {
   final StackedRoutesSingleton _stackedRoutesNavigator =
       StackedRoutesSingleton();
-
-  @override
-  void dispose() {
-    _stackedRoutesNavigator.dispose();
-  }
 
   @override
   int? getCurrentWidgetHash() {
@@ -97,7 +97,7 @@ abstract class StackedRoutesDisposer {
   void dispose();
 }
 
-abstract class InitiatorNavigator {
+abstract class InitiatorNavigator implements StackedRoutesDisposer {
   void loadStack(List<Widget> pages);
 
   /// Push the first page in the stack
@@ -108,7 +108,7 @@ abstract class InitiatorNavigator {
   List<Widget> getLoadedPages();
 }
 
-abstract class ParticipatorNavigator implements StackedRoutesDisposer {
+abstract class ParticipatorNavigator {
   /// Returns the page widget that belongs to the current route
   int? getCurrentWidgetHash();
 

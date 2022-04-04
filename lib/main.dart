@@ -36,6 +36,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
   @override
+  void dispose() {
+    stackedRoutesNavigator.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
