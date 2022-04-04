@@ -25,8 +25,8 @@ class _InitiatorNavigator implements InitiatorNavigator {
       StackedRoutesSingleton();
 
   @override
-  loadStack(List<Widget> pages, {bool strict = true}) {
-    _stackedRoutesNavigator.loadStack(pages, strict: strict);
+  loadStack(List<Widget> pages) {
+    _stackedRoutesNavigator.loadStack(pages);
   }
 
   @override
@@ -37,21 +37,6 @@ class _InitiatorNavigator implements InitiatorNavigator {
   @override
   List<Widget> getLoadedPages() {
     return _stackedRoutesNavigator.getLoadedPages();
-  }
-}
-
-mixin StackedRoutesCleaner {
-  final StackedRoutesNavigatorCleaner stackedRoutesNavigator =
-      _StackedRoutesCleaner();
-}
-
-class _StackedRoutesCleaner implements StackedRoutesNavigatorCleaner {
-  final StackedRoutesSingleton _stackedRoutesNavigator =
-      StackedRoutesSingleton();
-
-  @override
-  void clearData() {
-    _stackedRoutesNavigator.clearData();
   }
 }
 
@@ -70,8 +55,8 @@ class _ParticipatorNavigator implements ParticipatorNavigator {
       StackedRoutesSingleton();
 
   @override
-  void clearData() {
-    _stackedRoutesNavigator.clearData();
+  void dispose() {
+    _stackedRoutesNavigator.dispose();
   }
 
   @override
@@ -80,14 +65,14 @@ class _ParticipatorNavigator implements ParticipatorNavigator {
   }
 
   @override
-  void popCurrent(BuildContext context, {required Widget currentWidget}) {
+  void popCurrent(BuildContext context, {required Widget currentPage}) {
     return _stackedRoutesNavigator.popCurrent(context,
-        currentWidget: currentWidget);
+        currentPage: currentPage);
   }
 
   @override
-  void pushNext(BuildContext context, {required Widget currentWidget}) {
-    _stackedRoutesNavigator.pushNext(context, currentWidget: currentWidget);
+  void pushNext(BuildContext context, {required Widget currentPage}) {
+    _stackedRoutesNavigator.pushNext(context, currentPage: currentPage);
   }
 }
 
@@ -107,17 +92,13 @@ class PageDLLData {
   bool isLastPage() => nextPage == null;
 }
 
-abstract class StackedRoutesNavigatorCleaner {
-  /// reset all data
-  void clearData();
+abstract class StackedRoutesDisposer {
+  /// TODO actually dispose a singleton rather than just resetting the data.
+  void dispose();
 }
 
 abstract class InitiatorNavigator {
-  /// Can pass as an optional parameter whether or not to be strict about pages that get loaded onto the navigation stack.
-  ///
-  /// If true, pages that can participate will have to use the DynamicRouteParticipator mixin.
-  /// else, this restriction will be lifted (not recommended).
-  void loadStack(List<Widget> pages, {bool strict = true});
+  void loadStack(List<Widget> pages);
 
   /// Push the first page in the stack
   ///
@@ -127,17 +108,19 @@ abstract class InitiatorNavigator {
   List<Widget> getLoadedPages();
 }
 
-abstract class ParticipatorNavigator implements StackedRoutesNavigatorCleaner {
+abstract class ParticipatorNavigator implements StackedRoutesDisposer {
   /// Returns the page widget that belongs to the current route
   int? getCurrentWidgetHash();
 
   /// Push the next page in the stack
   ///
-  /// currentWidget is needed to obtain the correct previous and next route in the stack.
-  void pushNext(BuildContext context, {required Widget currentWidget});
+  /// currentPage is needed to obtain the correct previous and next route in the stack.
+  ///
+  /// ex. pushNext(context, currentPage: widget);
+  void pushNext(BuildContext context, {required Widget currentPage});
 
   /// Pop the current page from the stack
-  void popCurrent(BuildContext context, {required Widget currentWidget});
+  void popCurrent(BuildContext context, {required Widget currentPage});
 }
 
 /// Let's say that your login flow requires the user to fill in their information and the form is split into 5 pages.
@@ -159,7 +142,7 @@ abstract class ParticipatorNavigator implements StackedRoutesNavigatorCleaner {
 /// }
 ///
 /// class _SomeWidgetState extends State<Page4> {
-///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentWidget: widget);
+///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentPage: widget);
 ///   //...some code
 /// }
 /// ```
@@ -172,7 +155,7 @@ abstract class ParticipatorNavigator implements StackedRoutesNavigatorCleaner {
 /// }
 ///
 /// class _SomeWidgetState extends State<Page4> {
-///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentWidget: widget);
+///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentPage: widget);
 ///    //...build methods and whatever
 /// }
 ///```
@@ -208,7 +191,7 @@ abstract class StackedRoutesNavigator
     implements
         InitiatorNavigator,
         ParticipatorNavigator,
-        StackedRoutesNavigatorCleaner {
+        StackedRoutesDisposer {
   /// A map between the widget's hash and the doubly-linked list data it belongs to
   @protected
   late Map<int, PageDLLData> pageDataMap = {};
@@ -235,20 +218,19 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   }
 
   @override
-  clearData() {
+  dispose() {
     isStackLoaded = false;
     pageDataMap = {};
     currentPageHash = null;
   }
 
   @override
-  loadStack(List<Widget> pages, {bool strict = true}) {
+  loadStack(List<Widget> pages) {
     isStackLoaded = true;
-    pageDataMap = _generatePageStates(pages: pages, strict: strict);
+    pageDataMap = _generatePageStates(pages: pages);
   }
 
-  Map<int, PageDLLData> _generatePageStates(
-      {required List<Widget> pages, required bool strict}) {
+  Map<int, PageDLLData> _generatePageStates({required List<Widget> pages}) {
     final Map<int, PageDLLData> pageRoutes = {};
 
     currentPageHash = pages.first.hashCode;
@@ -257,13 +239,6 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
       final previousPage = i - 1 < 0 ? null : pages[i - 1];
       final nextPage = i + 1 >= pages.length ? null : pages[i + 1];
       final currentPage = pages[i];
-
-      final pageIsMarkedForDynamicRouting =
-          currentPage is StackedRoutesParticipator;
-      final strictModeOff = !strict;
-
-      assert(pageIsMarkedForDynamicRouting || strictModeOff,
-          "Strict mode is on, only use pages that use the DynamicRouteParticipator mixin");
 
       final currentPageStates = PageDLLData(
         previousPage: previousPage,
@@ -278,8 +253,8 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   }
 
   @override
-  void pushNext(BuildContext context, {required Widget currentWidget}) {
-    final currentPageState = pageDataMap[currentWidget.hashCode];
+  void pushNext(BuildContext context, {required Widget currentPage}) {
+    final currentPageState = pageDataMap[currentPage.hashCode];
 
     assert(currentPageState != null,
         "The widget provided was not included in the initial array when loadStack() was called.");
@@ -308,17 +283,17 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   }
 
   @override
-  void popCurrent(BuildContext context, {required Widget currentWidget}) {
-    final currentPage = pageDataMap[currentWidget.hashCode];
+  void popCurrent(BuildContext context, {required Widget currentPage}) {
+    final _currentPage = pageDataMap[currentPage.hashCode];
 
-    assert(currentPage != null,
+    assert(_currentPage != null,
         "The page this method is called in was not included in the array when loadStack() was called");
     assert(isStackLoaded,
         "the loadStack() method should be called first before this can be used.");
     assert(currentPageHash != null,
         "Call pushFirst(context) before the first page of this flow to begin stacked navigation");
 
-    currentPageHash = currentPage!.previousPage.hashCode;
+    currentPageHash = _currentPage!.previousPage.hashCode;
 
     Navigator.pop(context);
   }

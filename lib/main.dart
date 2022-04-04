@@ -1,5 +1,6 @@
 import 'package:dynamic_routing/pages/page1.dart';
 import 'package:dynamic_routing/pages/page2.dart';
+import 'package:dynamic_routing/pages/page3.dart';
 import 'package:dynamic_routing/pages/page4.dart';
 import 'package:dynamic_routing/pages/page5.dart';
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
@@ -19,13 +20,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Stacked Routes Test'),
+      home: const MyHomePage(title: 'Stacked Routes Test'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget with StackedRoutesInitiator {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -33,7 +34,7 @@ class MyHomePage extends StatefulWidget with StackedRoutesInitiator {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,10 +47,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            widget.stackedRoutesNavigator
-                .loadStack([Page1(), Page2(), Page4(), Page5()]);
+            stackedRoutesNavigator.loadStack([
+              const Page1(),
+              const Page2(),
+              const Page3(),
+              const Page4(),
+              const Page5(),
+              const Page3(),
+            ]);
 
-            widget.stackedRoutesNavigator.pushFirst(context);
+            stackedRoutesNavigator.pushFirst(context);
           },
         ),
       ),
