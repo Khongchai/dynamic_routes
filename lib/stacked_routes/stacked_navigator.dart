@@ -12,7 +12,11 @@ class StackedRoutesSingleton extends _StackedRoutesNavigatorImpl {
 
 /// Initiator mixin
 ///
-mixin StackedRoutesInitiator {
+/// The initiator page is the page directly before the flow.
+///
+/// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
+/// because we need to dispose the scoped singleton in the dispose method.
+mixin StackedRoutesInitiator<T extends StatefulWidget> on State<T> {
   final InitiatorNavigator stackedRoutesNavigator = _InitiatorNavigator();
 }
 
@@ -52,7 +56,12 @@ class _StackedRoutesCleaner implements StackedRoutesNavigatorCleaner {
 }
 
 /// Participator mixin
-mixin StackedRoutesParticipator {
+///
+/// Participators are the pages that are included in the loadStack method.
+///
+/// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
+/// because we need to dispose the scoped singleton in the dispose method.
+mixin StackedRoutesParticipator<T extends StatefulWidget> on State<T> {
   final ParticipatorNavigator stackedRoutesNavigator = _ParticipatorNavigator();
 }
 
