@@ -1,15 +1,46 @@
 import 'package:flutter/material.dart';
 
-//TODO make scoped singleton => this means that the singleton will have to be a manager of some sort instead of the stackedRoutes
+class _ScopedStackedRoutesManagerSingleton
+    extends _ScopedStackedRoutesManagerImpl {
+  static _ScopedStackedRoutesManagerSingleton singletonInstance =
+      _ScopedStackedRoutesManagerSingleton._();
 
-/// Concrete singleton implementation
-///
-class StackedRoutesSingleton extends _StackedRoutesNavigatorImpl {
-  static final _singletonInstance = StackedRoutesSingleton._();
+  _ScopedStackedRoutesManagerSingleton._();
 
-  StackedRoutesSingleton._();
+  factory _ScopedStackedRoutesManagerSingleton() => singletonInstance;
+}
 
-  factory StackedRoutesSingleton() => _singletonInstance;
+class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
+  final List<StackedRoutesNavigator> _stackedRoutesInstances = [];
+
+  @override
+  StackedRoutesNavigator dispenseNewStackedRoutesInstance() {
+    final newStackedRoutesInstance = _StackedRoutesNavigatorImpl();
+    _stackedRoutesInstances.add(newStackedRoutesInstance);
+
+    return newStackedRoutesInstance;
+  }
+
+  @override
+  StackedRoutesNavigator dispenseLatestStackedRoutesNavigator() {
+    return _stackedRoutesInstances.last;
+  }
+
+  @override
+  void disposeLastStackedRoutesInstance() {
+    _stackedRoutesInstances.removeLast();
+  }
+}
+
+abstract class ScopedStackedRoutesManager {
+  /// A static StackedRoutes manager that dispenses a scoped StackedRoutes singleton bound to
+  /// the lifeCycle of the StatefulWidget page it is attached to.
+  StackedRoutesNavigator dispenseNewStackedRoutesInstance();
+
+  StackedRoutesNavigator dispenseLatestStackedRoutesNavigator();
+
+  /// Remove reference to the instantiated object from the _stackedRoutesInstances array.
+  void disposeLastStackedRoutesInstance();
 }
 
 /// Initiator mixin
@@ -19,33 +50,33 @@ class StackedRoutesSingleton extends _StackedRoutesNavigatorImpl {
 /// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
 mixin StackedRoutesInitiator<T extends StatefulWidget> on State<T> {
-  final InitiatorNavigator stackedRoutesNavigator = _InitiatorNavigator();
+  final _InitiatorNavigator stackedRoutesNavigator = _InitiatorNavigator();
 }
 
-class _InitiatorNavigator implements InitiatorNavigator {
-  final StackedRoutesSingleton _stackedRoutesNavigator =
-      StackedRoutesSingleton();
+class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
+  final _scopedStackedRoutesManager =
+      _ScopedStackedRoutesManagerSingleton().dispenseNewStackedRoutesInstance();
 
   @override
   loadStack(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
-    _stackedRoutesNavigator.loadStack(pages,
+    _scopedStackedRoutesManager.loadStack(pages,
         lastPageCallback: lastPageCallback);
   }
 
   @override
   pushFirst(BuildContext context) {
-    _stackedRoutesNavigator.pushFirst(context);
+    _scopedStackedRoutesManager.pushFirst(context);
   }
 
   @override
   List<Widget> getLoadedPages() {
-    return _stackedRoutesNavigator.getLoadedPages();
+    return _scopedStackedRoutesManager.getLoadedPages();
   }
 
   @override
-  dispose() {
-    _stackedRoutesNavigator.dispose();
+  void dispose() {
+    _ScopedStackedRoutesManagerSingleton().disposeLastStackedRoutesInstance();
   }
 }
 
@@ -60,28 +91,28 @@ mixin StackedRoutesParticipator<T extends StatefulWidget> on State<T> {
 }
 
 class _ParticipatorNavigator implements ParticipatorNavigator {
-  final StackedRoutesSingleton _stackedRoutesNavigator =
-      StackedRoutesSingleton();
+  final _scopedStackedRoutesManager = _ScopedStackedRoutesManagerSingleton()
+      .dispenseLatestStackedRoutesNavigator();
 
   @override
   int? getCurrentWidgetHash() {
-    return _stackedRoutesNavigator.getCurrentWidgetHash();
+    return _scopedStackedRoutesManager.getCurrentWidgetHash();
   }
 
   @override
   void popCurrent(BuildContext context, {required Widget currentPage}) {
-    return _stackedRoutesNavigator.popCurrent(context,
+    return _scopedStackedRoutesManager.popCurrent(context,
         currentPage: currentPage);
   }
 
   @override
   void pushNext(BuildContext context, {required Widget currentPage}) {
-    _stackedRoutesNavigator.pushNext(context, currentPage: currentPage);
+    _scopedStackedRoutesManager.pushNext(context, currentPage: currentPage);
   }
 
   @override
   bool pushNextOfLastPageCalled() {
-    return _stackedRoutesNavigator.pushNextOfLastPageCalled();
+    return _scopedStackedRoutesManager.pushNextOfLastPageCalled();
   }
 }
 
@@ -102,17 +133,16 @@ class PageDLLData {
 }
 
 abstract class StackedRoutesDisposer {
-  /// TODO actually dispose a singleton rather than just resetting the data.
   void dispose();
 }
 
-abstract class InitiatorNavigator implements StackedRoutesDisposer {
+abstract class InitiatorNavigator {
   /// Call this function to load a list of pages to be pushed on to the stack.
   ///
   /// lastPageCallback is what pushNext will do for the final page in the array,
   /// for example, show a dialog box and then push another page or go back to the main page with the Navigator.
   void loadStack(List<Widget> pages,
-      {Function(BuildContext context) lastPageCallback});
+      {Function(BuildContext context)? lastPageCallback});
 
   /// Push the first page in the stack
   ///
@@ -188,10 +218,7 @@ abstract class ParticipatorNavigator {
 /// }
 /// ```
 abstract class StackedRoutesNavigator
-    implements
-        InitiatorNavigator,
-        ParticipatorNavigator,
-        StackedRoutesDisposer {
+    implements InitiatorNavigator, ParticipatorNavigator {
   /// A map between the widget's hash and the doubly-linked list data it belongs to
   late Map<int, PageDLLData> _pageDataMap = {};
 
@@ -216,15 +243,6 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   @override
   int? getCurrentWidgetHash() {
     return _currentPageHash;
-  }
-
-  @override
-  dispose() {
-    _isStackLoaded = false;
-    _pageDataMap = {};
-    _currentPageHash = null;
-    _lastPageCallback = null;
-    _isPostLastPage = false;
   }
 
   @override
