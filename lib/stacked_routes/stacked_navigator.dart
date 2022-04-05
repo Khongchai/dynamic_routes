@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// TODO to prevent having to give name to scoped stack, try nested arrays
+/// TODO 1. Why going in to the flow and then exiting doesn't work?
+/// TODO 2. after that is resolved, I think our answer actually lies in the array of widgets and their hashes.
 class _ScopedStackedRoutesManagerSingleton
     extends _ScopedStackedRoutesManagerImpl {
   static _ScopedStackedRoutesManagerSingleton singletonInstance =
