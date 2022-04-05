@@ -63,7 +63,8 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
                 const Page5(),
                 const Page3(),
               ],
-              () => Navigator.popUntil(context, (route) => route.isFirst),
+              lastPageCallback: (newContext) =>
+                  Navigator.popUntil(newContext, (route) => route.isFirst),
             );
 
             stackedRoutesNavigator.pushFirst(context);
