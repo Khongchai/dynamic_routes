@@ -102,13 +102,13 @@ void main() {
   testWidgets("Navigator load test", (WidgetTester tester) async {
     stubInitiatorWidget(tester,
         andThen: (context, stackedRoutesNavigator) async {
-      stackedRoutesNavigator.loadStack(pageStack1);
+      stackedRoutesNavigator.loadStack(pageStack1, () {});
       expect(stackedRoutesNavigator.getLoadedPages().length, pageStack1.length);
 
-      stackedRoutesNavigator.loadStack(pageStack2);
+      stackedRoutesNavigator.loadStack(pageStack2, () {});
       expect(stackedRoutesNavigator.getLoadedPages().length, pageStack2.length);
 
-      stackedRoutesNavigator.loadStack(pageStack3);
+      stackedRoutesNavigator.loadStack(pageStack3, () {});
       expect(stackedRoutesNavigator.getLoadedPages().length, pageStack3.length);
     });
   });
@@ -116,7 +116,7 @@ void main() {
   group("Navigation test", () {
     testWidgets("Routes push correctly", (WidgetTester tester) async {
       await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
-        initiatorNavigator.loadStack(pageStack4);
+        initiatorNavigator.loadStack(pageStack4, () {});
 
         initiatorNavigator.pushFirst(context); // Page1();
       });
@@ -141,7 +141,7 @@ void main() {
     testWidgets("Routes pop correctly", (WidgetTester tester) async {
       await stubInitiatorWidget(tester,
           andThen: ((context, initiatorNavigator) {
-        initiatorNavigator.loadStack(pageStack4);
+        initiatorNavigator.loadStack(pageStack4, () {});
 
         initiatorNavigator.pushFirst(context); // Page1();
       }));
@@ -185,7 +185,7 @@ void main() {
         const Page2(),
       ];
       await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
-        initiatorNavigator.loadStack(duplicateWidgetsStack);
+        initiatorNavigator.loadStack(duplicateWidgetsStack, () {});
 
         initiatorNavigator.pushFirst(context);
       });
@@ -211,7 +211,7 @@ void main() {
         "Routes push correctly after being interrupted by Navigator.pop()",
         (WidgetTester tester) async {
       await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
-        initiatorNavigator.loadStack(pageStack4);
+        initiatorNavigator.loadStack(pageStack4, () {});
 
         initiatorNavigator.pushFirst(context);
       });
@@ -229,6 +229,33 @@ void main() {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4[3].hashCode);
       });
+    });
+  });
+
+  testWidgets("", (WidgetTester tester) async {
+    const pages = [
+      Page1(),
+      Page2(),
+      Page3(),
+    ];
+    const postLastPage = Page4();
+
+    await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
+      initiatorNavigator.loadStack(pages, () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => postLastPage));
+      });
+
+      initiatorNavigator.pushFirst(context);
+    });
+
+    await stubParticipatorWidget(tester,
+        andThen: (context, stackedRoutesNavigator) {
+      stackedRoutesNavigator.pushNext(context, currentPage: pages[0]);
+      stackedRoutesNavigator.pushNext(context, currentPage: pages[1]);
+      stackedRoutesNavigator.pushNext(context, currentPage: pages[2]);
+
+      expect(stackedRoutesNavigator.isPostLastPage, true);
     });
   });
 

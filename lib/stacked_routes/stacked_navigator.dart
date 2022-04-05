@@ -27,8 +27,8 @@ class _InitiatorNavigator implements InitiatorNavigator {
       StackedRoutesSingleton();
 
   @override
-  loadStack(List<Widget> pages) {
-    _stackedRoutesNavigator.loadStack(pages);
+  loadStack(List<Widget> pages, VoidCallback lastPageCallback) {
+    _stackedRoutesNavigator.loadStack(pages, lastPageCallback);
   }
 
   @override
@@ -76,6 +76,9 @@ class _ParticipatorNavigator implements ParticipatorNavigator {
   void pushNext(BuildContext context, {required Widget currentPage}) {
     _stackedRoutesNavigator.pushNext(context, currentPage: currentPage);
   }
+
+  @override
+  bool get isPostLastPage => _stackedRoutesNavigator.isPostLastPage;
 }
 
 /// The doubly-linked-list-kind-of representation that is used to help ensure that the next page that is pushed is the correct one.
@@ -100,7 +103,11 @@ abstract class StackedRoutesDisposer {
 }
 
 abstract class InitiatorNavigator implements StackedRoutesDisposer {
-  void loadStack(List<Widget> pages);
+  /// Call this function to load a list of pages to be pushed on to the stack.
+  ///
+  /// lastPageCallback is what pushNext will do for the final page in the array,
+  /// for example, show a dialog box and then push another page or go back to the main page with the Navigator.
+  void loadStack(List<Widget> pages, VoidCallback lastPageCallback);
 
   /// Push the first page in the stack
   ///
@@ -123,6 +130,8 @@ abstract class ParticipatorNavigator {
 
   /// Pop the current page from the stack
   void popCurrent(BuildContext context, {required Widget currentPage});
+
+  bool get isPostLastPage;
 }
 
 /// Let's say that your login flow requires the user to fill in their information and the form is split into 5 pages.
@@ -189,6 +198,13 @@ abstract class StackedRoutesNavigator
   /// Use as a safeguard to prevent this being used before the states are loaded.
   @protected
   bool isStackLoaded = false;
+
+  /// Is set to true when pushNext of the last page has been called.
+  @protected
+  bool isPostLastPage = false;
+
+  @protected
+  VoidCallback lastPageCallback = () {};
 }
 
 //TODO also added a mechanism for passing information
@@ -208,10 +224,13 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
     isStackLoaded = false;
     pageDataMap = {};
     currentPageHash = null;
+    lastPageCallback = () {};
+    isPostLastPage = false;
   }
 
   @override
-  loadStack(List<Widget> pages) {
+  loadStack(List<Widget> pages, VoidCallback lastPageCallback) {
+    this.lastPageCallback = lastPageCallback;
     isStackLoaded = true;
     pageDataMap = _generatePageStates(pages: pages);
   }
@@ -244,18 +263,20 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
 
     assert(currentPageState != null,
         "The widget provided was not included in the initial array when loadStack() was called.");
-    assert(
-        !currentPageState!.isLastPage(),
-        "There are no more pages to push. This is the end of the flow. "
-        "From this page onward, use the Navigator class instead");
     assert(isStackLoaded,
         "the loadStack() method should be called first before this can be used.");
     assert(currentPageHash != null,
         "Call pushFirst(context) before the first page of this flow to begin stacked navigation");
 
-    currentPageHash = currentPageState!.nextPage.hashCode;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => currentPageState.nextPage!));
+    if (currentPageState!.isLastPage()) {
+      lastPageCallback();
+
+      isPostLastPage = true;
+    } else {
+      currentPageHash = currentPageState.nextPage.hashCode;
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => currentPageState.nextPage!));
+    }
   }
 
   @override

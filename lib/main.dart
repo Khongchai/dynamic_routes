@@ -54,14 +54,17 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            stackedRoutesNavigator.loadStack([
-              const Page1(),
-              const Page2(),
-              const Page3(),
-              const Page4(),
-              const Page5(),
-              const Page3(),
-            ]);
+            stackedRoutesNavigator.loadStack(
+              [
+                const Page1(),
+                const Page2(),
+                const Page3(),
+                const Page4(),
+                const Page5(),
+                const Page3(),
+              ],
+              () => Navigator.popUntil(context, (route) => route.isFirst),
+            );
 
             stackedRoutesNavigator.pushFirst(context);
           },
