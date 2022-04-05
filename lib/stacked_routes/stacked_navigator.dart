@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 /// TODO 1. Why going in to the flow and then exiting doesn't work?
 /// TODO 2. after that is resolved, I think our answer actually lies in the array of widgets and their hashes.
+///
+/// TODO for point 2, there are two methods, disperse the hashcode of each widget into separate key that links back to the same instance in a map, or
+/// TODO concatenate all keys to save space and look up later by looping through all elements.
 class _ScopedStackedRoutesManagerSingleton
     extends _ScopedStackedRoutesManagerImpl {
   static _ScopedStackedRoutesManagerSingleton singletonInstance =
