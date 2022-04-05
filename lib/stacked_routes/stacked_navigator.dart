@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// TODO to prevent having to give name to scoped stack, try nested arrays
 class _ScopedStackedRoutesManagerSingleton
     extends _ScopedStackedRoutesManagerImpl {
   static _ScopedStackedRoutesManagerSingleton singletonInstance =
@@ -50,7 +51,7 @@ abstract class ScopedStackedRoutesManager {
 /// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
 mixin StackedRoutesInitiator<T extends StatefulWidget> on State<T> {
-  final _InitiatorNavigator stackedRoutesNavigator = _InitiatorNavigator();
+  final _InitiatorNavigator stackedRoutesInitiator = _InitiatorNavigator();
 }
 
 class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
@@ -87,7 +88,8 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
 /// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
 mixin StackedRoutesParticipator<T extends StatefulWidget> on State<T> {
-  final ParticipatorNavigator stackedRoutesNavigator = _ParticipatorNavigator();
+  final ParticipatorNavigator stackedRoutesParticipator =
+      _ParticipatorNavigator();
 }
 
 class _ParticipatorNavigator implements ParticipatorNavigator {

@@ -13,7 +13,8 @@ class _Page2State extends State<Page2>
     with TestPageUI, StackedRoutesParticipator {
   @override
   VoidCallback onNextPressed() {
-    return () => stackedRoutesNavigator.pushNext(context, currentPage: widget);
+    return () =>
+        stackedRoutesParticipator.pushNext(context, currentPage: widget);
   }
 
   @override

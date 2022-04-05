@@ -26,7 +26,7 @@ class _InitiatorWidgetStubState extends State<_InitiatorWidgetStub>
     return MaterialApp(
       home: Builder(builder: (context) {
         WidgetsBinding.instance?.addPostFrameCallback((_) {
-          widget.postBuildCallback(context, stackedRoutesNavigator);
+          widget.postBuildCallback(context, stackedRoutesInitiator);
         });
         return Container();
       }),
@@ -61,7 +61,7 @@ class _ParticipatorWidgetStubState extends State<_ParticipatorWidgetStub>
     return MaterialApp(
       home: Builder(builder: (context) {
         WidgetsBinding.instance?.addPostFrameCallback((_) {
-          widget.postBuildCallback(context, stackedRoutesNavigator);
+          widget.postBuildCallback(context, stackedRoutesParticipator);
         });
         return Container();
       }),

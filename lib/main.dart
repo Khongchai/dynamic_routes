@@ -1,3 +1,4 @@
+import 'package:dynamic_routing/pages/mixed_page/mixed_page.dart';
 import 'package:dynamic_routing/pages/page1.dart';
 import 'package:dynamic_routing/pages/page2.dart';
 import 'package:dynamic_routing/pages/page3.dart';
@@ -37,7 +38,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
   @override
   void dispose() {
-    stackedRoutesNavigator.dispose();
+    stackedRoutesInitiator.dispose();
 
     super.dispose();
   }
@@ -54,11 +55,11 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            stackedRoutesNavigator.loadStack(
+            stackedRoutesInitiator.loadStack(
               [
                 const Page1(),
                 const Page2(),
-                const Page3(),
+                const MixedPage(),
                 const Page4(),
                 const Page5(),
                 const Page3(),
@@ -67,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
                   Navigator.popUntil(newContext, (route) => route.isFirst),
             );
 
-            stackedRoutesNavigator.pushFirst(context);
+            stackedRoutesInitiator.pushFirst(context);
           },
         ),
       ),
