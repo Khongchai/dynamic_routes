@@ -1,6 +1,4 @@
-import 'package:dynamic_routing/pages/mixed_page/sub_page1.dart';
-import 'package:dynamic_routing/pages/mixed_page/sub_page2.dart';
-import 'package:dynamic_routing/pages/mixed_page/sub_page3.dart';
+import 'package:dynamic_routing/pages/participator_page.dart';
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import "package:flutter/material.dart";
 
@@ -25,29 +23,41 @@ class _MixedPageState extends State<MixedPage>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Align(
-          alignment: Alignment.center,
-          child: Column(children: [
-            TextButton(
-                key: const Key("Mixed Page Continue Flow"),
-                onPressed: () => stackedRoutesParticipator.pushNext(context,
-                    currentPage: widget),
-                child: const Text("Continue this flow")),
-            TextButton(
-                key: const Key("Mixed Page Begin a New Flow"),
-                onPressed: () {
-                  stackedRoutesInitiator.initializeNewStack(const [
-                    SubPage1(),
-                    SubPage2(),
-                    SubPage3(),
-                  ], lastPageCallback: (context) {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                  });
-                  stackedRoutesInitiator.pushFirst(context);
-                },
-                child: const Text("Begin a new flow")),
-          ])),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          TextButton(
+              onPressed: () => stackedRoutesParticipator.pushNext(context,
+                  currentPage: widget),
+              child: const Text("Continue this flow")),
+          TextButton(
+              onPressed: () {
+                stackedRoutesInitiator.initializeNewStack(const [
+                  ParticipatorPage(title: "SubFlow 1 Sub page 1"),
+                  ParticipatorPage(title: "SubFlow 1 Sub page 2"),
+                  ParticipatorPage(title: "SubFlow 1 Sub page 3"),
+                ], lastPageCallback: (context) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                });
+                stackedRoutesInitiator.pushFirst(context);
+              },
+              child: const Text("Begin sub flow 1")),
+          TextButton(
+              onPressed: () {
+                stackedRoutesInitiator.initializeNewStack(const [
+                  ParticipatorPage(title: "SubFlow 2 Sub page 1"),
+                  ParticipatorPage(title: "SubFlow 2 Sub page 2"),
+                  ParticipatorPage(title: "SubFlow 2 Sub page 3"),
+                ], lastPageCallback: (context) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                });
+                stackedRoutesInitiator.pushFirst(context);
+              },
+              child: const Text("Begin sub flow 2")),
+        ]),
+      ),
     );
   }
 }

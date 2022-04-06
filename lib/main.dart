@@ -1,9 +1,5 @@
 import 'package:dynamic_routing/pages/mixed_page/mixed_page.dart';
-import 'package:dynamic_routing/pages/page1.dart';
-import 'package:dynamic_routing/pages/page2.dart';
-import 'package:dynamic_routing/pages/page3.dart';
-import 'package:dynamic_routing/pages/page4.dart';
-import 'package:dynamic_routing/pages/page5.dart';
+import 'package:dynamic_routing/pages/participator_page.dart';
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import 'package:flutter/material.dart';
 
@@ -22,12 +18,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Stacked Routes Test', pageWidgets: [
-        Page1(),
-        Page2(),
+        ParticipatorPage(title: "Page 1"),
+        ParticipatorPage(title: "Page 2"),
         MixedPage(),
-        Page4(),
-        Page5(),
-        Page3(),
+        ParticipatorPage(title: "Page 4"),
+        ParticipatorPage(title: "Page 5"),
+        ParticipatorPage(title: "Page 6"),
       ]),
     );
   }
@@ -48,6 +44,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
+  late List<Widget> _widgets = widget.pageWidgets;
+
   @override
   void dispose() {
     stackedRoutesInitiator.dispose();
@@ -58,6 +56,13 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: TextButton(
+        child: const Text("Shuffle page order"),
+        onPressed: () {
+          final newWidgets = [..._widgets]..shuffle();
+          _widgets = newWidgets;
+        },
+      ),
       appBar: AppBar(
         title: Text(widget.title),
       ),
@@ -67,11 +72,11 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            stackedRoutesInitiator.initializeNewStack(
-              widget.pageWidgets,
-              lastPageCallback: (newContext) =>
-                  Navigator.popUntil(newContext, (route) => route.isFirst),
-            );
+            stackedRoutesInitiator.initializeNewStack(_widgets,
+                lastPageCallback: (newContext) {
+              Navigator.popUntil(newContext, (route) => route.isFirst);
+              stackedRoutesInitiator.dispose();
+            });
 
             stackedRoutesInitiator.pushFirst(context);
           },

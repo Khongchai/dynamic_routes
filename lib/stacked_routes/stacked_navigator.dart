@@ -29,7 +29,9 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
       assert(
           _stackedRoutesInstances[widget.hashCode] == null,
           "These instances of participators are already bound to participator "
-          "instances and cannot be assigned again until the current instances are disposed.");
+          "instances and cannot be assigned again until the current instances are disposed."
+          "If you are trying to initiate a new flow from the same initiator page after possibly having popped all routes from a callback, "
+          "ensure that the dispose() method is called before starting the flow again.");
       _stackedRoutesInstances[widget.hashCode] = newStackedRoutesInstance;
     }
 
@@ -67,11 +69,9 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
   @override
   void disposeStackedRoutesInstance(Widget initiatorWidget) {
     final participators =
-        _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
-    assert(participators != null,
-        "The provided widget is not an initiator widget.");
+        _initiatorAndParticipatorsMap[initiatorWidget.hashCode] ?? [];
 
-    for (final p in participators!) {
+    for (final p in participators) {
       _stackedRoutesInstances[p.hashCode] = null;
     }
 
@@ -90,7 +90,8 @@ abstract class ScopedStackedRoutesManager {
   StackedRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
   StackedRoutesNavigator dispenseParticipatorFromInitiator(Widget widget);
 
-  /// Remove reference to the instantiated object from the _stackedRoutesInstances array.
+  /// Remove reference to all instantiated objects from the _stackedRoutesInstances array.
+  ///
   void disposeStackedRoutesInstance(Widget widget);
 }
 
@@ -204,6 +205,10 @@ class PageDLLData {
 }
 
 abstract class StackedRoutesDisposer {
+  /// This is the only method that is allowed to be called repeatedly, even when it does nothing.
+  /// The reason being that sometimes, you might want to both dispose the references when the Initiator widget's state
+  /// is disposed and when the callback is called, but you are not sure which one should happen first. The fix is to just call
+  /// the dispose method in both places.
   void dispose();
 }
 
