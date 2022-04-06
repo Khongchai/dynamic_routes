@@ -10,13 +10,16 @@ class InitiatorPageMock extends StatefulWidget {
   final Key? pushFirstButtonKey;
   final Key? backButtonKey;
 
-  final List<Widget> participatorsPage;
+  /// Provide this if you wanna test the widget by tapping on the page's button.
+  ///
+  /// If testing the state, just give empty array.
+  final List<Widget> participatorPages;
 
   const InitiatorPageMock({
     this.pushFirstButtonKey,
     this.backButtonKey,
     Key? key,
-    required this.participatorsPage,
+    required this.participatorPages,
   }) : super(key: key);
 
   @override
@@ -43,7 +46,7 @@ class _InitiatorPageMockState extends State<InitiatorPageMock>
                 key: widget.pushFirstButtonKey,
                 onPressed: () {
                   stackedRoutesInitiator
-                      .initializeNewStack(widget.participatorsPage);
+                      .initializeNewStack(widget.participatorPages);
                   stackedRoutesInitiator.pushFirst(context);
                 },
                 child: const Text("Push First")),
@@ -59,11 +62,11 @@ class _InitiatorPageMockState extends State<InitiatorPageMock>
 }
 
 class MockParticipatorWidget extends StatefulWidget {
-  final Key? pushFirstButtonKey;
+  final Key? pushNextButtonKey;
   final Key? backButtonKey;
 
   const MockParticipatorWidget(
-      {this.pushFirstButtonKey, this.backButtonKey, Key? key})
+      {this.pushNextButtonKey, this.backButtonKey, Key? key})
       : super(key: key);
 
   @override
@@ -77,7 +80,7 @@ class _MockParticipatorWidgetState extends State<MockParticipatorWidget>
     return Column(
       children: [
         TextButton(
-            key: widget.pushFirstButtonKey,
+            key: widget.pushNextButtonKey,
             onPressed: () {
               stackedRoutesParticipator.pushNext(context, currentPage: widget);
             },
@@ -117,7 +120,7 @@ void main() {
 
         const initiatorPushFirstKey = Key("pushKey");
         await tester.pumpWidget(const InitiatorPageMock(
-          participatorsPage: pageWidgetSet1,
+          participatorPages: pageWidgetSet1,
           pushFirstButtonKey: initiatorPushFirstKey,
         ));
 
@@ -137,7 +140,7 @@ void main() {
             (WidgetTester tester) async {
           const participatorWidget = MockParticipatorWidget();
           await tester
-              .pumpWidget(const InitiatorPageMock(participatorsPage: []));
+              .pumpWidget(const InitiatorPageMock(participatorPages: []));
 
           final _InitiatorPageMockState initiatorWidgetState =
               tester.state(find.byType(InitiatorPageMock));
@@ -157,7 +160,7 @@ void main() {
             (WidgetTester tester) async {
           const participatorWidget = MockParticipatorWidget();
           await tester.pumpWidget(const InitiatorPageMock(
-            participatorsPage: [],
+            participatorPages: [],
           ));
 
           final _InitiatorPageMockState initiatorWidgetState =
@@ -175,30 +178,62 @@ void main() {
       });
     });
     testWidgets("Routes push correctly", (WidgetTester tester) async {
-      // Save references in an array so that we can refer
-      // and check if the instances are the same later.
-      // const testKeys = [
-      //   Key("p1"),
-      //   Key("p2"),
-      //   Key("p3"),
-      //   Key("p4"),
-      // ];
-      // final mockParticipators = [
-      //   MockParticipatorWidget(key: testKeys[0]),
-      //   MockParticipatorWidget(key: testKeys[1]),
-      //   MockParticipatorWidget(key: testKeys[2]),
-      //   MockParticipatorWidget(key: testKeys[3]),
-      // ];
-      //
-      // // Initiate
-      // await tester.pumpWidget(const InitiatorPageMock());
-      //
-      // // The first page should have already been pushed
-      // expect(
-      //     getParticipatorStateFromKey(tester, testKeys[0])
-      //         .stackedRoutesParticipator
-      //         .getCurrentWidgetHash(),
-      //     mockParticipators[0].hashCode);
+      const firstParticipatorKey = Key("fpk");
+      const firstParticipatorNextButtonKey = Key("fnk");
+      const secondParticipatorKey = Key("spk");
+      const secondParticipatorNextButtonKey = Key("snk");
+      const thirdParticipatorKey = Key("tpk");
+      const thirdParticipatorNextButtonKey = Key("tnk");
+      const fourthParticipatorKey = Key("tpk");
+      const participatorPages = [
+        MockParticipatorWidget(
+            key: firstParticipatorKey,
+            pushNextButtonKey: firstParticipatorNextButtonKey),
+        MockParticipatorWidget(
+          key: secondParticipatorKey,
+          pushNextButtonKey: secondParticipatorNextButtonKey,
+        ),
+        MockParticipatorWidget(
+          key: thirdParticipatorKey,
+          pushNextButtonKey: thirdParticipatorNextButtonKey,
+        ),
+        MockParticipatorWidget(key: fourthParticipatorKey),
+      ];
+
+      const initiatorPushFirstKey = Key("pushKey");
+      await tester.pumpWidget(const InitiatorPageMock(
+        participatorPages: participatorPages,
+        pushFirstButtonKey: initiatorPushFirstKey,
+      ));
+
+      await tester.tap(find.byKey(initiatorPushFirstKey));
+      await tester.pumpAndSettle();
+
+      expect(
+          getParticipatorStateFromKey(tester, firstParticipatorKey)
+              .stackedRoutesParticipator
+              .getCurrentWidgetHash(),
+          participatorPages[0].hashCode);
+
+      await tester.tap(find.byKey(firstParticipatorNextButtonKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(secondParticipatorNextButtonKey));
+      await tester.pumpAndSettle();
+
+      expect(
+          getParticipatorStateFromKey(tester, thirdParticipatorKey)
+              .stackedRoutesParticipator
+              .getCurrentWidgetHash(),
+          participatorPages[2].hashCode);
+
+      await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
+      await tester.pumpAndSettle();
+
+      expect(
+          getParticipatorStateFromKey(tester, fourthParticipatorKey)
+              .stackedRoutesParticipator
+              .getCurrentWidgetHash(),
+          participatorPages.last.hashCode);
 
       // await _mockParticipatorWidget(tester,
       //     andThen: (context, stackedRoutesNavigator) {
@@ -214,104 +249,104 @@ void main() {
       //
       //   expect(stackedRoutesNavigator.getCurrentWidgetHash(),
       //       pageStack4.last.hashCode); // Page4()
+      // });
+      //
+      // testWidgets("Routes pop correctly", (WidgetTester tester) async {
+      //   await _mockInitiatorWidget(tester,
+      //       andThen: ((context, initiatorNavigator) {
+      //     initiatorNavigator.initializeNewStack(pageStack4);
+      //
+      //     initiatorNavigator.pushFirst(context); // Page1();
+      //   }));
+      //
+      //   await _mockParticipatorWidget(tester,
+      //       andThen: (context, stackedRoutesNavigator) {
+      //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //         pageStack4.first.hashCode);
+      //
+      //     stackedRoutesNavigator.pushNext(context,
+      //         currentPage: pageStack4[0]); // current: Page1(), next: Page2();
+      //     stackedRoutesNavigator.pushNext(context,
+      //         currentPage: pageStack4[1]); // current: Page2(), next: Page3();
+      //     stackedRoutesNavigator.popCurrent(context,
+      //         currentPage: pageStack4[2]); // current: Page3(), next: Page2();
+      //
+      //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //         pageStack4[1].hashCode);
+      //
+      //     stackedRoutesNavigator.popCurrent(context,
+      //         currentPage: pageStack4[1]); // current: Page2(), next: Page1();
+      //
+      //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //         pageStack4.first.hashCode);
+      //
+      //     stackedRoutesNavigator.pushNext(context,
+      //         currentPage: pageStack4[0]); // current: Page1(), next: Page2();
+      //     stackedRoutesNavigator.pushNext(context,
+      //         currentPage: pageStack4[1]); // current: Page2(), next: Page3();
+      //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //         pageStack4[2].hashCode);
+      //   });
+      // });
+      //
+      // testWidgets(
+      //     "Routes push correctly even when the same pages are used more than once in the navigation stack",
+      //     (WidgetTester tester) async {
+      //   final duplicateWidgetsStack = [
+      //     const Page1(),
+      //     const Page2(),
+      //     const Page2(),
+      //   ];
+      //   await _mockInitiatorWidget(tester,
+      //       andThen: (context, initiatorNavigator) {
+      //     initiatorNavigator.initializeNewStack(duplicateWidgetsStack);
+      //
+      //     initiatorNavigator.pushFirst(context);
+      //   });
+      //
+      //   await _mockParticipatorWidget(tester,
+      //       andThen: (context, stackedRoutesNavigator) {
+      //     stackedRoutesNavigator.pushNext(context,
+      //         currentPage: duplicateWidgetsStack[0]);
+      //     stackedRoutesNavigator.pushNext(context,
+      //         currentPage: duplicateWidgetsStack[1]);
+      //
+      //     // Should not be the same instance
+      //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //         isNot(duplicateWidgetsStack[1].hashCode));
+      //
+      //     // Should be the same page
+      //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //         duplicateWidgetsStack[2].hashCode);
+      //   });
+      // });
+      //
+      // testWidgets(
+      //     "Routes push correctly after being interrupted by Navigator.pop()",
+      //     (WidgetTester tester) async {
+      //   await _mockInitiatorWidget(tester,
+      //       andThen: (context, initiatorNavigator) {
+      //     initiatorNavigator.initializeNewStack(
+      //       pageStack4,
+      //     );
+      //
+      //     initiatorNavigator.pushFirst(context);
+      //   });
+      //
+      //   await _mockParticipatorWidget(tester,
+      //       andThen: (context, stackedRoutesParticipator) {
+      //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[0]);
+      //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[1]);
+      //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[2]);
+      //
+      //     Navigator.of(context).pop();
+      //
+      //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[2]);
+      //
+      //     expect(stackedRoutesParticipator.getCurrentWidgetHash(),
+      //         pageStack4[3].hashCode);
+      //   });
     });
-    //
-    // testWidgets("Routes pop correctly", (WidgetTester tester) async {
-    //   await _mockInitiatorWidget(tester,
-    //       andThen: ((context, initiatorNavigator) {
-    //     initiatorNavigator.initializeNewStack(pageStack4);
-    //
-    //     initiatorNavigator.pushFirst(context); // Page1();
-    //   }));
-    //
-    //   await _mockParticipatorWidget(tester,
-    //       andThen: (context, stackedRoutesNavigator) {
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         pageStack4.first.hashCode);
-    //
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[0]); // current: Page1(), next: Page2();
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[1]); // current: Page2(), next: Page3();
-    //     stackedRoutesNavigator.popCurrent(context,
-    //         currentPage: pageStack4[2]); // current: Page3(), next: Page2();
-    //
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         pageStack4[1].hashCode);
-    //
-    //     stackedRoutesNavigator.popCurrent(context,
-    //         currentPage: pageStack4[1]); // current: Page2(), next: Page1();
-    //
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         pageStack4.first.hashCode);
-    //
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[0]); // current: Page1(), next: Page2();
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[1]); // current: Page2(), next: Page3();
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         pageStack4[2].hashCode);
-    //   });
-    // });
-    //
-    // testWidgets(
-    //     "Routes push correctly even when the same pages are used more than once in the navigation stack",
-    //     (WidgetTester tester) async {
-    //   final duplicateWidgetsStack = [
-    //     const Page1(),
-    //     const Page2(),
-    //     const Page2(),
-    //   ];
-    //   await _mockInitiatorWidget(tester,
-    //       andThen: (context, initiatorNavigator) {
-    //     initiatorNavigator.initializeNewStack(duplicateWidgetsStack);
-    //
-    //     initiatorNavigator.pushFirst(context);
-    //   });
-    //
-    //   await _mockParticipatorWidget(tester,
-    //       andThen: (context, stackedRoutesNavigator) {
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: duplicateWidgetsStack[0]);
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: duplicateWidgetsStack[1]);
-    //
-    //     // Should not be the same instance
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         isNot(duplicateWidgetsStack[1].hashCode));
-    //
-    //     // Should be the same page
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         duplicateWidgetsStack[2].hashCode);
-    //   });
-    // });
-    //
-    // testWidgets(
-    //     "Routes push correctly after being interrupted by Navigator.pop()",
-    //     (WidgetTester tester) async {
-    //   await _mockInitiatorWidget(tester,
-    //       andThen: (context, initiatorNavigator) {
-    //     initiatorNavigator.initializeNewStack(
-    //       pageStack4,
-    //     );
-    //
-    //     initiatorNavigator.pushFirst(context);
-    //   });
-    //
-    //   await _mockParticipatorWidget(tester,
-    //       andThen: (context, stackedRoutesParticipator) {
-    //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[0]);
-    //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[1]);
-    //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[2]);
-    //
-    //     Navigator.of(context).pop();
-    //
-    //     stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[2]);
-    //
-    //     expect(stackedRoutesParticipator.getCurrentWidgetHash(),
-    //         pageStack4[3].hashCode);
-    //   });
-    // });
   });
 
   // testWidgets("Test last page callback", (WidgetTester tester) async {
