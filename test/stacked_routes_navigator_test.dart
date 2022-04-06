@@ -1,8 +1,13 @@
+import 'package:dynamic_routing/pages/mixed_page/mixed_page.dart';
+import 'package:dynamic_routing/pages/mixed_page/sub_page1.dart';
+import 'package:dynamic_routing/pages/mixed_page/sub_page2.dart';
+import 'package:dynamic_routing/pages/mixed_page/sub_page3.dart';
 import 'package:dynamic_routing/pages/page1.dart';
 import 'package:dynamic_routing/pages/page2.dart';
 import 'package:dynamic_routing/pages/page3.dart';
 import 'package:dynamic_routing/pages/page4.dart';
 import 'package:dynamic_routing/pages/page5.dart';
+import 'package:dynamic_routing/pages/page6.dart';
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import 'package:flutter/material.dart';
 import "package:flutter_test/flutter_test.dart";
@@ -34,7 +39,7 @@ class _InitiatorWidgetStubState extends State<_InitiatorWidgetStub>
   }
 }
 
-Future<void> stubInitiatorWidget(WidgetTester tester,
+Future<void> _stubInitiatorWidget(WidgetTester tester,
     {required Function(
             BuildContext context, InitiatorNavigator initiatorNavigator)
         andThen}) async {
@@ -69,11 +74,49 @@ class _ParticipatorWidgetStubState extends State<_ParticipatorWidgetStub>
   }
 }
 
-Future<void> stubParticipatorWidget(WidgetTester tester,
+Future<void> _stubParticipatorWidget(WidgetTester tester,
     {required Function(
             BuildContext context, ParticipatorNavigator stackedRoutesNavigator)
         andThen}) async {
   await tester.pumpWidget(_ParticipatorWidgetStub(postBuildCallback: andThen));
+}
+
+class _MixedPageStub extends StatefulWidget {
+  final Function(
+      BuildContext context,
+      ParticipatorNavigator participatorNavigator,
+      InitiatorNavigator initiatorNavigator) postBuildCallback;
+
+  const _MixedPageStub({required this.postBuildCallback, Key? key})
+      : super(key: key);
+
+  @override
+  State<_MixedPageStub> createState() => _MixedPageStubState();
+}
+
+class _MixedPageStubState extends State<_MixedPageStub>
+    with StackedRoutesParticipator, StackedRoutesInitiator {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(builder: (context) {
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          widget.postBuildCallback(
+              context, stackedRoutesParticipator, stackedRoutesInitiator);
+        });
+        return Container();
+      }),
+    );
+  }
+}
+
+Future<void> _stubMixedWidget(WidgetTester tester,
+    {required Function(
+            BuildContext context,
+            ParticipatorNavigator stackedRoutesNavigator,
+            InitiatorNavigator stakcedRoutesInitiator)
+        andThen}) async {
+  await tester.pumpWidget(_MixedPageStub(postBuildCallback: andThen));
 }
 
 final pageStack1 = [
@@ -100,7 +143,7 @@ final pageStack4 = [
 
 void main() {
   testWidgets("Navigator load test", (WidgetTester tester) async {
-    stubInitiatorWidget(tester,
+    _stubInitiatorWidget(tester,
         andThen: (context, stackedRoutesNavigator) async {
       stackedRoutesNavigator.loadStack(pageStack1);
       expect(stackedRoutesNavigator.getLoadedPages().length, pageStack1.length);
@@ -115,13 +158,14 @@ void main() {
 
   group("Navigation test", () {
     testWidgets("Routes push correctly", (WidgetTester tester) async {
-      await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
+      await _stubInitiatorWidget(tester,
+          andThen: (context, initiatorNavigator) {
         initiatorNavigator.loadStack(pageStack4);
 
         initiatorNavigator.pushFirst(context); // Page1();
       });
 
-      await stubParticipatorWidget(tester,
+      await _stubParticipatorWidget(tester,
           andThen: (context, stackedRoutesNavigator) {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
@@ -139,14 +183,14 @@ void main() {
     });
 
     testWidgets("Routes pop correctly", (WidgetTester tester) async {
-      await stubInitiatorWidget(tester,
+      await _stubInitiatorWidget(tester,
           andThen: ((context, initiatorNavigator) {
         initiatorNavigator.loadStack(pageStack4);
 
         initiatorNavigator.pushFirst(context); // Page1();
       }));
 
-      await stubParticipatorWidget(tester,
+      await _stubParticipatorWidget(tester,
           andThen: (context, stackedRoutesNavigator) {
         expect(stackedRoutesNavigator.getCurrentWidgetHash(),
             pageStack4.first.hashCode);
@@ -184,13 +228,14 @@ void main() {
         const Page2(),
         const Page2(),
       ];
-      await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
+      await _stubInitiatorWidget(tester,
+          andThen: (context, initiatorNavigator) {
         initiatorNavigator.loadStack(duplicateWidgetsStack);
 
         initiatorNavigator.pushFirst(context);
       });
 
-      await stubParticipatorWidget(tester,
+      await _stubParticipatorWidget(tester,
           andThen: (context, stackedRoutesNavigator) {
         stackedRoutesNavigator.pushNext(context,
             currentPage: duplicateWidgetsStack[0]);
@@ -210,7 +255,8 @@ void main() {
     testWidgets(
         "Routes push correctly after being interrupted by Navigator.pop()",
         (WidgetTester tester) async {
-      await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
+      await _stubInitiatorWidget(tester,
+          andThen: (context, initiatorNavigator) {
         initiatorNavigator.loadStack(
           pageStack4,
         );
@@ -218,44 +264,95 @@ void main() {
         initiatorNavigator.pushFirst(context);
       });
 
-      await stubParticipatorWidget(tester,
-          andThen: (context, stackedRoutesNavigator) {
-        stackedRoutesNavigator.pushNext(context, currentPage: pageStack4[0]);
-        stackedRoutesNavigator.pushNext(context, currentPage: pageStack4[1]);
-        stackedRoutesNavigator.pushNext(context, currentPage: pageStack4[2]);
+      await _stubParticipatorWidget(tester,
+          andThen: (context, stackedRoutesParticipator) {
+        stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[0]);
+        stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[1]);
+        stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[2]);
 
         Navigator.of(context).pop();
 
-        stackedRoutesNavigator.pushNext(context, currentPage: pageStack4[2]);
+        stackedRoutesParticipator.pushNext(context, currentPage: pageStack4[2]);
 
-        expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+        expect(stackedRoutesParticipator.getCurrentWidgetHash(),
             pageStack4[3].hashCode);
       });
     });
   });
 
-  testWidgets("", (WidgetTester tester) async {
-    const pages = [
-      Page1(),
-      Page2(),
-      Page3(),
-    ];
+  testWidgets("Test last page callback", (WidgetTester tester) async {
+    const pages = [Page1(), Page2(), Page3()];
 
-    await stubInitiatorWidget(tester, andThen: (context, initiatorNavigator) {
-      initiatorNavigator.loadStack(pages,
+    await _stubInitiatorWidget(tester,
+        andThen: (context, stackedRoutesInitiator) async {
+      stackedRoutesInitiator.loadStack(pages,
           lastPageCallback: (BuildContext context) => Navigator.push(
               context, MaterialPageRoute(builder: (_) => const Page4())));
 
-      initiatorNavigator.pushFirst(context);
+      stackedRoutesInitiator.pushFirst(context);
     });
 
-    await stubParticipatorWidget(tester,
-        andThen: (context, stackedRoutesNavigator) {
-      stackedRoutesNavigator.pushNext(context, currentPage: pages[0]);
-      stackedRoutesNavigator.pushNext(context, currentPage: pages[1]);
-      stackedRoutesNavigator.pushNext(context, currentPage: pages[2]);
+    await _stubParticipatorWidget(tester,
+        andThen: (context, stackedRoutesParticipator) {
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[0]);
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[1]);
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[2]);
 
-      expect(stackedRoutesNavigator.pushNextOfLastPageCalled(), true);
+      expect(stackedRoutesParticipator.pushNextOfLastPageCalled(), true);
+    });
+  });
+
+  testWidgets(
+      "Nested routes test when one of the pages is both an initiator and a participator",
+      (WidgetTester tester) async {
+    const pages = [Page1(), Page2(), Page3(), MixedPage(), Page5(), Page6()];
+    const subPages = [SubPage1(), SubPage2(), SubPage3()];
+
+    await _stubInitiatorWidget(tester,
+        andThen: (context, stackedRoutesInitiator) {
+      stackedRoutesInitiator.loadStack(pages);
+      stackedRoutesInitiator.pushFirst(context);
+    });
+
+    await _stubParticipatorWidget(tester,
+        andThen: (context, stackedRoutesParticipator) async {
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[0]);
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[1]);
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[2]);
+    });
+
+    /// With this new stack, we should be beginning a new flow.
+    await _stubInitiatorWidget(tester,
+        andThen: (context, stackedRoutesInitiator) {
+      stackedRoutesInitiator.loadStack(subPages, lastPageCallback: (context) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      });
+      stackedRoutesInitiator.pushFirst(context);
+    });
+
+    await _stubParticipatorWidget(tester,
+        andThen: (context, stackedRoutesParticipator) {
+      expect(subPages[0].hashCode,
+          stackedRoutesParticipator.getCurrentWidgetHash());
+
+      stackedRoutesParticipator.pushNext(context, currentPage: subPages[0]);
+      stackedRoutesParticipator.pushNext(context, currentPage: subPages[1]);
+      stackedRoutesParticipator.pushNext(context,
+          currentPage: subPages[2]); // lastPageCallback calls pop() three times
+
+      expect(
+          pages[3].hashCode, stackedRoutesParticipator.getCurrentWidgetHash());
+
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[3]);
+      stackedRoutesParticipator.pushNext(context, currentPage: pages[4]);
+
+      // Expect an error because we didn't assign a callback to this page initially and we call pushNext.
+      expect(
+          () => stackedRoutesParticipator.pushNext(context,
+              currentPage: pages[5]),
+          throwsAssertionError);
     });
   });
 
