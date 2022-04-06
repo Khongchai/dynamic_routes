@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            stackedRoutesInitiator.loadStack(
+            stackedRoutesInitiator.initializeNewStack(
               [
                 const Page1(),
                 const Page2(),

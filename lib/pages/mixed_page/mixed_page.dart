@@ -33,7 +33,7 @@ class _MixedPageState extends State<MixedPage>
                 child: const Text("Continue this flow")),
             TextButton(
                 onPressed: () {
-                  stackedRoutesInitiator.loadStack(const [
+                  stackedRoutesInitiator.initializeNewStack(const [
                     SubPage1(),
                     SubPage2(),
                     SubPage3(),

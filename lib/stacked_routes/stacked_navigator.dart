@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// TODO 1. Why going in to the flow and then exiting doesn't work?
-/// TODO 2. after that is resolved, I think our answer actually lies in the array of widgets and their hashes.
-///
-/// TODO for point 2, there are two methods, disperse the hashcode of each widget into separate key that links back to the same instance in a map, or
-/// TODO concatenate all keys to save space and look up later by looping through all elements.
 class _ScopedStackedRoutesManagerSingleton
     extends _ScopedStackedRoutesManagerImpl {
   static _ScopedStackedRoutesManagerSingleton singletonInstance =
@@ -16,36 +11,83 @@ class _ScopedStackedRoutesManagerSingleton
 }
 
 class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
-  final List<StackedRoutesNavigator> _stackedRoutesInstances = [];
+  /// The map is a map of all hashCode of the widgets in a stack.
+  final Map<int, StackedRoutesNavigator?> _stackedRoutesInstances = {};
+
+  /// This map is for disposing all participator when the initiator is disposed.
+  final Map<int, List<Widget>?> _initiatorAndParticipatorsMap = {};
 
   @override
-  StackedRoutesNavigator dispenseNewStackedRoutesInstance() {
+  StackedRoutesNavigator dispenseNewStackedRoutesInstance({
+    required List<Widget> participatorWidgets,
+    required Widget initiatorWidget,
+  }) {
     final newStackedRoutesInstance = _StackedRoutesNavigatorImpl();
-    _stackedRoutesInstances.add(newStackedRoutesInstance);
+
+    // Bind all widgets in the stack to this newStackedRoutesInstance
+    for (final widget in participatorWidgets) {
+      _stackedRoutesInstances[widget.hashCode] = newStackedRoutesInstance;
+    }
+
+    // Save reference for the disposition of all references to widgets in the stack from this manager
+    _initiatorAndParticipatorsMap[initiatorWidget.hashCode] =
+        participatorWidgets;
 
     return newStackedRoutesInstance;
   }
 
   @override
-  StackedRoutesNavigator dispenseLatestStackedRoutesNavigator() {
-    return _stackedRoutesInstances.last;
+  StackedRoutesNavigator dispenseNavigatorFromParticipator(
+      Widget participator) {
+    final queriedInstance = _stackedRoutesInstances[participator.hashCode];
+    assert(queriedInstance != null,
+        "The widget provided is not tied to any stackedRoutesInstance");
+
+    return queriedInstance!;
   }
 
   @override
-  void disposeLastStackedRoutesInstance() {
-    _stackedRoutesInstances.removeLast();
+  StackedRoutesNavigator dispenseNavigatorFromInitiator(
+      Widget initiatorWidget) {
+    final queriedInitiator =
+        _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
+    assert(queriedInitiator != null,
+        "The widget provided is not tied to any stackedRoutesInstance. Did you forget to call initializeNewStack()?");
+
+    final queriedParticipator =
+        _stackedRoutesInstances[queriedInitiator!.first.hashCode];
+
+    return queriedParticipator!;
+  }
+
+  @override
+  void disposeStackedRoutesInstance(Widget initiatorWidget) {
+    final participators =
+        _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
+    assert(participators != null,
+        "The provided widget is not an initiator widget.");
+
+    for (final p in participators!) {
+      _stackedRoutesInstances[p.hashCode] = null;
+    }
+
+    _initiatorAndParticipatorsMap[initiatorWidget.hashCode] = null;
   }
 }
 
 abstract class ScopedStackedRoutesManager {
   /// A static StackedRoutes manager that dispenses a scoped StackedRoutes singleton bound to
   /// the lifeCycle of the StatefulWidget page it is attached to.
-  StackedRoutesNavigator dispenseNewStackedRoutesInstance();
+  StackedRoutesNavigator dispenseNewStackedRoutesInstance({
+    required List<Widget> participatorWidgets,
+    required Widget initiatorWidget,
+  });
 
-  StackedRoutesNavigator dispenseLatestStackedRoutesNavigator();
+  StackedRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
+  StackedRoutesNavigator dispenseNavigatorFromInitiator(Widget widget);
 
   /// Remove reference to the instantiated object from the _stackedRoutesInstances array.
-  void disposeLastStackedRoutesInstance();
+  void disposeStackedRoutesInstance(Widget widget);
 }
 
 /// Initiator mixin
@@ -55,33 +97,47 @@ abstract class ScopedStackedRoutesManager {
 /// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
 mixin StackedRoutesInitiator<T extends StatefulWidget> on State<T> {
-  final _InitiatorNavigator stackedRoutesInitiator = _InitiatorNavigator();
+  late final _InitiatorNavigator stackedRoutesInitiator =
+      _InitiatorNavigator(widget);
 }
 
 class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
-  final _scopedStackedRoutesManager =
-      _ScopedStackedRoutesManagerSingleton().dispenseNewStackedRoutesInstance();
+  final _scopedStackedRoutesManager = _ScopedStackedRoutesManagerSingleton();
+  final Widget _initiatorWidget;
+
+  _InitiatorNavigator(this._initiatorWidget);
 
   @override
-  loadStack(List<Widget> pages,
+  initializeNewStack(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
-    _scopedStackedRoutesManager.loadStack(pages,
-        lastPageCallback: lastPageCallback);
+    final newInstance =
+        _scopedStackedRoutesManager.dispenseNewStackedRoutesInstance(
+            participatorWidgets: pages, initiatorWidget: _initiatorWidget);
+
+    newInstance.initializeNewStack(pages, lastPageCallback: lastPageCallback);
   }
 
   @override
   pushFirst(BuildContext context) {
-    _scopedStackedRoutesManager.pushFirst(context);
+    final instance = _scopedStackedRoutesManager
+        .dispenseNavigatorFromInitiator(_initiatorWidget);
+    instance.pushFirst(context);
   }
 
   @override
-  List<Widget> getLoadedPages() {
-    return _scopedStackedRoutesManager.getLoadedPages();
+  List<Widget> getLoadedPages(
+      {StackedRoutesNavigator? participator,
+      StackedRoutesNavigator? initiator}) {
+    final instance = _scopedStackedRoutesManager
+        .dispenseNavigatorFromInitiator(_initiatorWidget);
+
+    return instance.getLoadedPages();
   }
 
   @override
   void dispose() {
-    _ScopedStackedRoutesManagerSingleton().disposeLastStackedRoutesInstance();
+    _ScopedStackedRoutesManagerSingleton()
+        .disposeStackedRoutesInstance(_initiatorWidget);
   }
 }
 
@@ -92,33 +148,37 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
 /// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
 mixin StackedRoutesParticipator<T extends StatefulWidget> on State<T> {
-  final ParticipatorNavigator stackedRoutesParticipator =
-      _ParticipatorNavigator();
+  late final ParticipatorNavigator stackedRoutesParticipator =
+      _ParticipatorNavigator(widget);
 }
 
 class _ParticipatorNavigator implements ParticipatorNavigator {
-  final _scopedStackedRoutesManager = _ScopedStackedRoutesManagerSingleton()
-      .dispenseLatestStackedRoutesNavigator();
+  late final StackedRoutesNavigator _navigator;
+
+  _ParticipatorNavigator(Widget participatorWidget) {
+    final _scopedStackedRoutesManager = _ScopedStackedRoutesManagerSingleton();
+    _navigator = _scopedStackedRoutesManager
+        .dispenseNavigatorFromParticipator(participatorWidget);
+  }
 
   @override
   int? getCurrentWidgetHash() {
-    return _scopedStackedRoutesManager.getCurrentWidgetHash();
+    return _navigator.getCurrentWidgetHash();
   }
 
   @override
   void popCurrent(BuildContext context, {required Widget currentPage}) {
-    return _scopedStackedRoutesManager.popCurrent(context,
-        currentPage: currentPage);
+    _navigator.popCurrent(context, currentPage: currentPage);
   }
 
   @override
   void pushNext(BuildContext context, {required Widget currentPage}) {
-    _scopedStackedRoutesManager.pushNext(context, currentPage: currentPage);
+    _navigator.pushNext(context, currentPage: currentPage);
   }
 
   @override
   bool pushNextOfLastPageCalled() {
-    return _scopedStackedRoutesManager.pushNextOfLastPageCalled();
+    return _navigator.pushNextOfLastPageCalled();
   }
 }
 
@@ -147,7 +207,7 @@ abstract class InitiatorNavigator {
   ///
   /// lastPageCallback is what pushNext will do for the final page in the array,
   /// for example, show a dialog box and then push another page or go back to the main page with the Navigator.
-  void loadStack(List<Widget> pages,
+  void initializeNewStack(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback});
 
   /// Push the first page in the stack
@@ -252,7 +312,7 @@ class _StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   }
 
   @override
-  loadStack(List<Widget> pages,
+  initializeNewStack(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
     _lastPageCallback = lastPageCallback;
     _isStackLoaded = true;
