@@ -235,6 +235,8 @@ abstract class ParticipatorNavigator {
   void pushNext(BuildContext context, {required Widget currentPage});
 
   /// Pop the current page from the stack
+  ///
+  /// Prefer this over Navigator.of(context).pop for all participators widget.
   void popCurrent(BuildContext context, {required Widget currentPage});
 
   bool pushNextOfLastPageCalled();

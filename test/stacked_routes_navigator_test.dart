@@ -1,11 +1,22 @@
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
+import 'package:mockito/mockito.dart';
+
+class MockBuildContext extends Mock implements BuildContext {}
 
 /// For testing the internal states of the navigator
 class InitiatorPageMock extends StatefulWidget {
+  final Key? pushFirstButtonKey;
+  final Key? backButtonKey;
+
+  final List<Widget> participatorsPage;
+
   const InitiatorPageMock({
+    this.pushFirstButtonKey,
+    this.backButtonKey,
     Key? key,
+    required this.participatorsPage,
   }) : super(key: key);
 
   @override
@@ -23,13 +34,37 @@ class _InitiatorPageMockState extends State<InitiatorPageMock>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp();
+  Widget build(_) {
+    return MaterialApp(
+      home: Builder(
+        builder: (context) => Column(
+          children: [
+            TextButton(
+                key: widget.pushFirstButtonKey,
+                onPressed: () {
+                  stackedRoutesInitiator
+                      .initializeNewStack(widget.participatorsPage);
+                  stackedRoutesInitiator.pushFirst(context);
+                },
+                child: const Text("Push First")),
+            TextButton(
+                key: widget.backButtonKey,
+                onPressed: Navigator.of(context).pop,
+                child: const Text("Pop")),
+          ],
+        ),
+      ),
+    );
   }
 }
 
 class MockParticipatorWidget extends StatefulWidget {
-  const MockParticipatorWidget({Key? key}) : super(key: key);
+  final Key? pushFirstButtonKey;
+  final Key? backButtonKey;
+
+  const MockParticipatorWidget(
+      {this.pushFirstButtonKey, this.backButtonKey, Key? key})
+      : super(key: key);
 
   @override
   State<MockParticipatorWidget> createState() => _MockParticipatorWidgetState();
@@ -39,8 +74,27 @@ class _MockParticipatorWidgetState extends State<MockParticipatorWidget>
     with StackedRoutesParticipator {
   @override
   Widget build(BuildContext context) {
-    return const SizedBox();
+    return Column(
+      children: [
+        TextButton(
+            key: widget.pushFirstButtonKey,
+            onPressed: () {
+              stackedRoutesParticipator.pushNext(context, currentPage: widget);
+            },
+            child: const Text("Push First")),
+        TextButton(
+            key: widget.backButtonKey,
+            onPressed: () => stackedRoutesParticipator.popCurrent(context,
+                currentPage: widget),
+            child: const Text("Pop")),
+      ],
+    );
   }
+}
+
+_MockParticipatorWidgetState getParticipatorStateFromKey(
+    WidgetTester tester, Key key) {
+  return tester.state(find.byKey(key)) as _MockParticipatorWidgetState;
 }
 
 void main() {
@@ -61,13 +115,16 @@ void main() {
           MockParticipatorWidget(),
         ];
 
-        await tester.pumpWidget(const InitiatorPageMock());
+        const initiatorPushFirstKey = Key("pushKey");
+        await tester.pumpWidget(const InitiatorPageMock(
+          participatorsPage: pageWidgetSet1,
+          pushFirstButtonKey: initiatorPushFirstKey,
+        ));
+
+        await tester.tap(find.byKey(initiatorPushFirstKey));
 
         final _InitiatorPageMockState initiatorWidgetState =
             tester.state(find.byType(InitiatorPageMock));
-
-        initiatorWidgetState.stackedRoutesInitiator
-            .initializeNewStack(pageWidgetSet1);
 
         expect(
             initiatorWidgetState.stackedRoutesInitiator.getLoadedPages().length,
@@ -79,7 +136,8 @@ void main() {
             "when disposed, reassignment from the same instance should be possible.",
             (WidgetTester tester) async {
           const participatorWidget = MockParticipatorWidget();
-          await tester.pumpWidget(const InitiatorPageMock());
+          await tester
+              .pumpWidget(const InitiatorPageMock(participatorsPage: []));
 
           final _InitiatorPageMockState initiatorWidgetState =
               tester.state(find.byType(InitiatorPageMock));
@@ -98,17 +156,13 @@ void main() {
             "When not disposed, reassignment from the same instance should not be possible.",
             (WidgetTester tester) async {
           const participatorWidget = MockParticipatorWidget();
-          await tester.pumpWidget(const InitiatorPageMock());
+          await tester.pumpWidget(const InitiatorPageMock(
+            participatorsPage: [],
+          ));
 
           final _InitiatorPageMockState initiatorWidgetState =
               tester.state(find.byType(InitiatorPageMock));
 
-          initiatorWidgetState.stackedRoutesInitiator
-              .initializeNewStack([participatorWidget]);
-
-          initiatorWidgetState.stackedRoutesInitiator.dispose();
-
-          // Shouldn't be any error
           initiatorWidgetState.stackedRoutesInitiator
               .initializeNewStack([participatorWidget]);
 
@@ -120,32 +174,47 @@ void main() {
         });
       });
     });
-    // testWidgets("Routes push correctly", (WidgetTester tester) async {
-    //   await _mockInitiatorWidget(tester,
-    //       andThen: (context, initiatorNavigator) {
-    //     initiatorNavigator.initializeNewStack(pageStack4);
-    //
-    //     initiatorNavigator.pushFirst(context); // Page1();
-    //   });
-    //
-    //   tester.tap(find.byKey(Key("")));
-    //
-    //   await _mockParticipatorWidget(tester,
-    //       andThen: (context, stackedRoutesNavigator) {
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         pageStack4.first.hashCode);
-    //
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[0]); // current: Page1(), next: Page2();
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[1]); // current: Page2(), next: Page3();
-    //     stackedRoutesNavigator.pushNext(context,
-    //         currentPage: pageStack4[2]); // current: Page3(), next: Page4();
-    //
-    //     expect(stackedRoutesNavigator.getCurrentWidgetHash(),
-    //         pageStack4.last.hashCode); // Page4()
-    //   });
-    // });
+    testWidgets("Routes push correctly", (WidgetTester tester) async {
+      // Save references in an array so that we can refer
+      // and check if the instances are the same later.
+      // const testKeys = [
+      //   Key("p1"),
+      //   Key("p2"),
+      //   Key("p3"),
+      //   Key("p4"),
+      // ];
+      // final mockParticipators = [
+      //   MockParticipatorWidget(key: testKeys[0]),
+      //   MockParticipatorWidget(key: testKeys[1]),
+      //   MockParticipatorWidget(key: testKeys[2]),
+      //   MockParticipatorWidget(key: testKeys[3]),
+      // ];
+      //
+      // // Initiate
+      // await tester.pumpWidget(const InitiatorPageMock());
+      //
+      // // The first page should have already been pushed
+      // expect(
+      //     getParticipatorStateFromKey(tester, testKeys[0])
+      //         .stackedRoutesParticipator
+      //         .getCurrentWidgetHash(),
+      //     mockParticipators[0].hashCode);
+
+      // await _mockParticipatorWidget(tester,
+      //     andThen: (context, stackedRoutesNavigator) {
+      //   expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //       pageStack4.first.hashCode);
+      //
+      //   stackedRoutesNavigator.pushNext(context,
+      //       currentPage: pageStack4[0]); // current: Page1(), next: Page2();
+      //   stackedRoutesNavigator.pushNext(context,
+      //       currentPage: pageStack4[1]); // current: Page2(), next: Page3();
+      //   stackedRoutesNavigator.pushNext(context,
+      //       currentPage: pageStack4[2]); // current: Page3(), next: Page4();
+      //
+      //   expect(stackedRoutesNavigator.getCurrentWidgetHash(),
+      //       pageStack4.last.hashCode); // Page4()
+    });
     //
     // testWidgets("Routes pop correctly", (WidgetTester tester) async {
     //   await _mockInitiatorWidget(tester,
