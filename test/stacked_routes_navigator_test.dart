@@ -177,6 +177,67 @@ void main() {
         });
       });
     });
+    // testWidgets(
+    //     "Dispose should be called automatically before each initialization to ensure a clean up.",
+    //     (WidgetTester tester) async {
+    //   const firstParticipatorKey = Key("fpk");
+    //   const firstParticipatorNextButtonKey = Key("fnk");
+    //   const secondParticipatorKey = Key("spk");
+    //   const secondParticipatorNextButtonKey = Key("snk");
+    //   const thirdParticipatorKey = Key("tpk");
+    //   const thirdParticipatorNextButtonKey = Key("tnk");
+    //   const fourthParticipatorKey = Key("tpk");
+    //   const participatorPages = [
+    //     MockParticipatorWidget(
+    //         key: firstParticipatorKey,
+    //         pushNextButtonKey: firstParticipatorNextButtonKey),
+    //     MockParticipatorWidget(
+    //       key: secondParticipatorKey,
+    //       pushNextButtonKey: secondParticipatorNextButtonKey,
+    //     ),
+    //     MockParticipatorWidget(
+    //       key: thirdParticipatorKey,
+    //       pushNextButtonKey: thirdParticipatorNextButtonKey,
+    //     ),
+    //     MockParticipatorWidget(key: fourthParticipatorKey),
+    //   ];
+    //
+    //   const initiatorPushFirstKey = Key("pushKey");
+    //   await tester.pumpWidget(const InitiatorPageMock(
+    //     participatorPages: participatorPages,
+    //     pushFirstButtonKey: initiatorPushFirstKey,
+    //   ));
+    //
+    //   await tester.tap(find.byKey(initiatorPushFirstKey));
+    //   await tester.pumpAndSettle();
+    //
+    //   expect(
+    //       getParticipatorStateFromKey(tester, firstParticipatorKey)
+    //           .stackedRoutesParticipator
+    //           .getCurrentWidgetHash(),
+    //       participatorPages[0].hashCode);
+    //
+    //   await tester.tap(find.byKey(firstParticipatorNextButtonKey));
+    //   await tester.pumpAndSettle();
+    //   await tester.tap(find.byKey(secondParticipatorNextButtonKey));
+    //   await tester.pumpAndSettle();
+    //
+    //   expect(
+    //       getParticipatorStateFromKey(tester, thirdParticipatorKey)
+    //           .stackedRoutesParticipator
+    //           .getCurrentWidgetHash(),
+    //       participatorPages[2].hashCode);
+    //
+    //   await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
+    //   await tester.pumpAndSettle();
+    //
+    //   expect(
+    //       getParticipatorStateFromKey(tester, fourthParticipatorKey)
+    //           .stackedRoutesParticipator
+    //           .getCurrentWidgetHash(),
+    //       participatorPages.last.hashCode);
+    // });
+
     testWidgets("Routes push correctly", (WidgetTester tester) async {
       const firstParticipatorKey = Key("fpk");
       const firstParticipatorNextButtonKey = Key("fnk");

@@ -28,10 +28,8 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
     for (final widget in participatorWidgets) {
       assert(
           _stackedRoutesInstances[widget.hashCode] == null,
-          "These instances of participators are already bound to participator "
-          "instances and cannot be assigned again until the current instances are disposed."
-          "If you are trying to initiate a new flow from the same initiator page after possibly having popped all routes from a callback, "
-          "ensure that the dispose() method is called before starting the flow again.");
+          "The participator instance ${widget.hashCode} is already bound to a navigation scope."
+          "instances and cannot be assigned again until the current instances are disposed.");
       _stackedRoutesInstances[widget.hashCode] = newStackedRoutesInstance;
     }
 
@@ -116,6 +114,9 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
   initializeNewStack(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
     assert(pages.isNotEmpty, "The participators page array cannot be empty");
+
+    // //Ensure clean up of the old one.
+    _scopedStackedRoutesManager.disposeStackedRoutesInstance(_initiatorWidget);
 
     final newInstance =
         _scopedStackedRoutesManager.dispenseNewStackedRoutesInstance(
@@ -206,9 +207,10 @@ class PageDLLData {
 
 abstract class StackedRoutesDisposer {
   /// This is the only method that is allowed to be called repeatedly, even when it does nothing.
+  ///
   /// The reason being that sometimes, you might want to both dispose the references when the Initiator widget's state
   /// is disposed and when the callback is called, but you are not sure which one should happen first. The fix is to just call
-  /// the dispose method in both places.
+  /// the dispose method in both places (or more).
   void dispose();
 }
 

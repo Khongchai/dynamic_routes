@@ -75,7 +75,6 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
             stackedRoutesInitiator.initializeNewStack(_widgets,
                 lastPageCallback: (newContext) {
               Navigator.popUntil(newContext, (route) => route.isFirst);
-              stackedRoutesInitiator.dispose();
             });
 
             stackedRoutesInitiator.pushFirst(context);
