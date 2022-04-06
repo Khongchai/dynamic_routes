@@ -21,13 +21,25 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Stacked Routes Test'),
+      home: const MyHomePage(title: 'Stacked Routes Test', pageWidgets: [
+        Page1(),
+        Page2(),
+        MixedPage(),
+        Page4(),
+        Page5(),
+        Page3(),
+      ]),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  final List<Widget> pageWidgets;
+  const MyHomePage({
+    Key? key,
+    required this.title,
+    required this.pageWidgets,
+  }) : super(key: key);
 
   final String title;
 
@@ -56,14 +68,7 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
           child: const Text("Enter flow"),
           onPressed: () {
             stackedRoutesInitiator.initializeNewStack(
-              [
-                const Page1(),
-                const Page2(),
-                const MixedPage(),
-                const Page4(),
-                const Page5(),
-                const Page3(),
-              ],
+              widget.pageWidgets,
               lastPageCallback: (newContext) =>
                   Navigator.popUntil(newContext, (route) => route.isFirst),
             );

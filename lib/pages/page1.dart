@@ -20,6 +20,6 @@ class _Page1State extends State<Page1>
 
   @override
   String pageTitle() {
-    return "Page1";
+    return "Page 1";
   }
 }

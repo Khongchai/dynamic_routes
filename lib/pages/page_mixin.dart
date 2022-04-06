@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// A
 class _TestWidget extends StatefulWidget {
   final String pageTitle;
   final VoidCallback onNextPressed;
@@ -20,6 +21,7 @@ class _TestWidgetState extends State<_TestWidget> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
+          key: Key(widget.pageTitle),
           onPressed: () {
             widget.onNextPressed();
           },

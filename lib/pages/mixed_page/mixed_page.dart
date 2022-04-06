@@ -28,10 +28,12 @@ class _MixedPageState extends State<MixedPage>
           alignment: Alignment.center,
           child: Column(children: [
             TextButton(
+                key: const Key("Mixed Page Continue Flow"),
                 onPressed: () => stackedRoutesParticipator.pushNext(context,
                     currentPage: widget),
                 child: const Text("Continue this flow")),
             TextButton(
+                key: const Key("Mixed Page Begin a New Flow"),
                 onPressed: () {
                   stackedRoutesInitiator.initializeNewStack(const [
                     SubPage1(),
