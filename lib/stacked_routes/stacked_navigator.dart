@@ -26,6 +26,10 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
 
     // Bind all widgets in the stack to this newStackedRoutesInstance
     for (final widget in participatorWidgets) {
+      assert(
+          _stackedRoutesInstances[widget.hashCode] == null,
+          "These instances of participators are already bound to participator "
+          "instances and cannot be assigned again until the current instances are disposed.");
       _stackedRoutesInstances[widget.hashCode] = newStackedRoutesInstance;
     }
 
@@ -47,7 +51,7 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
   }
 
   @override
-  StackedRoutesNavigator dispenseNavigatorFromInitiator(
+  StackedRoutesNavigator dispenseParticipatorFromInitiator(
       Widget initiatorWidget) {
     final queriedInitiator =
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
@@ -84,7 +88,7 @@ abstract class ScopedStackedRoutesManager {
   });
 
   StackedRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
-  StackedRoutesNavigator dispenseNavigatorFromInitiator(Widget widget);
+  StackedRoutesNavigator dispenseParticipatorFromInitiator(Widget widget);
 
   /// Remove reference to the instantiated object from the _stackedRoutesInstances array.
   void disposeStackedRoutesInstance(Widget widget);
@@ -110,6 +114,8 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
   @override
   initializeNewStack(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
+    assert(pages.isNotEmpty, "The participators page array cannot be empty");
+
     final newInstance =
         _scopedStackedRoutesManager.dispenseNewStackedRoutesInstance(
             participatorWidgets: pages, initiatorWidget: _initiatorWidget);
@@ -120,7 +126,7 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
   @override
   pushFirst(BuildContext context) {
     final instance = _scopedStackedRoutesManager
-        .dispenseNavigatorFromInitiator(_initiatorWidget);
+        .dispenseParticipatorFromInitiator(_initiatorWidget);
     instance.pushFirst(context);
   }
 
@@ -129,15 +135,14 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
       {StackedRoutesNavigator? participator,
       StackedRoutesNavigator? initiator}) {
     final instance = _scopedStackedRoutesManager
-        .dispenseNavigatorFromInitiator(_initiatorWidget);
+        .dispenseParticipatorFromInitiator(_initiatorWidget);
 
     return instance.getLoadedPages();
   }
 
   @override
   void dispose() {
-    _ScopedStackedRoutesManagerSingleton()
-        .disposeStackedRoutesInstance(_initiatorWidget);
+    _scopedStackedRoutesManager.disposeStackedRoutesInstance(_initiatorWidget);
   }
 }
 

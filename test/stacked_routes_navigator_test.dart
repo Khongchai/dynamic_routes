@@ -1,25 +1,125 @@
+import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
+import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 
-//TODO think about a way to test everything. Right now the initiator and participator instance is tied the widget in which the mixin is attached.
-// TODO test with the pages in the pages folder
+/// For testing the internal states of the navigator
+class InitiatorPageMock extends StatefulWidget {
+  const InitiatorPageMock({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<InitiatorPageMock> createState() => _InitiatorPageMockState();
+}
+
+class _InitiatorPageMockState extends State<InitiatorPageMock>
+    with StackedRoutesInitiator {
+  @override
+  void dispose() {
+    // Do nothing, we'll do it
+    stackedRoutesInitiator.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp();
+  }
+}
+
+class MockParticipatorWidget extends StatefulWidget {
+  const MockParticipatorWidget({Key? key}) : super(key: key);
+
+  @override
+  State<MockParticipatorWidget> createState() => _MockParticipatorWidgetState();
+}
+
+class _MockParticipatorWidgetState extends State<MockParticipatorWidget>
+    with StackedRoutesParticipator {
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox();
+  }
+}
 
 void main() {
-  testWidgets("Navigator load test", (WidgetTester tester) async {
-    //
-    // _mockInitiatorWidget(tester,
-    //     andThen: (context, stackedRoutesInitiator) async {
-    //   stackedRoutesInitiator.initializeNewStack(pageStack1);
-    //   expect(stackedRoutesInitiator.getLoadedPages().length, pageStack1.length);
-    //
-    //   stackedRoutesInitiator.initializeNewStack(pageStack2);
-    //   expect(stackedRoutesInitiator.getLoadedPages().length, pageStack2.length);
-    //
-    //   stackedRoutesInitiator.initializeNewStack(pageStack3);
-    //   expect(stackedRoutesInitiator.getLoadedPages().length, pageStack3.length);
-    // });
-  });
-
   group("Navigation test", () {
+    group("Navigator load test", () {
+      testWidgets(
+          "Test initializing a new stack and the initial binding between a widget and the initiator",
+          (WidgetTester tester) async {
+        const pageWidgetSet1 = [
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+          MockParticipatorWidget(),
+        ];
+
+        await tester.pumpWidget(const InitiatorPageMock());
+
+        final _InitiatorPageMockState initiatorWidgetState =
+            tester.state(find.byType(InitiatorPageMock));
+
+        initiatorWidgetState.stackedRoutesInitiator
+            .initializeNewStack(pageWidgetSet1);
+
+        expect(
+            initiatorWidgetState.stackedRoutesInitiator.getLoadedPages().length,
+            pageWidgetSet1.length);
+      });
+
+      group("After initiation", () {
+        testWidgets(
+            "when disposed, reassignment from the same instance should be possible.",
+            (WidgetTester tester) async {
+          const participatorWidget = MockParticipatorWidget();
+          await tester.pumpWidget(const InitiatorPageMock());
+
+          final _InitiatorPageMockState initiatorWidgetState =
+              tester.state(find.byType(InitiatorPageMock));
+
+          initiatorWidgetState.stackedRoutesInitiator
+              .initializeNewStack([participatorWidget]);
+
+          initiatorWidgetState.stackedRoutesInitiator.dispose();
+
+          // Shouldn't be any error
+          initiatorWidgetState.stackedRoutesInitiator
+              .initializeNewStack([participatorWidget]);
+        });
+
+        testWidgets(
+            "When not disposed, reassignment from the same instance should not be possible.",
+            (WidgetTester tester) async {
+          const participatorWidget = MockParticipatorWidget();
+          await tester.pumpWidget(const InitiatorPageMock());
+
+          final _InitiatorPageMockState initiatorWidgetState =
+              tester.state(find.byType(InitiatorPageMock));
+
+          initiatorWidgetState.stackedRoutesInitiator
+              .initializeNewStack([participatorWidget]);
+
+          initiatorWidgetState.stackedRoutesInitiator.dispose();
+
+          // Shouldn't be any error
+          initiatorWidgetState.stackedRoutesInitiator
+              .initializeNewStack([participatorWidget]);
+
+          // We should be able to do this only once per the same set of widgets and there should be an assertion that guards this.
+          expect(
+              () => initiatorWidgetState.stackedRoutesInitiator
+                  .initializeNewStack([participatorWidget]),
+              throwsAssertionError);
+        });
+      });
+    });
     // testWidgets("Routes push correctly", (WidgetTester tester) async {
     //   await _mockInitiatorWidget(tester,
     //       andThen: (context, initiatorNavigator) {
