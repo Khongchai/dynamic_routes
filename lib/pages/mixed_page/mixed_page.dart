@@ -1,4 +1,6 @@
-import 'package:dynamic_routing/pages/page_mixin.dart';
+import 'package:dynamic_routing/pages/mixed_page/sub_page1.dart';
+import 'package:dynamic_routing/pages/mixed_page/sub_page2.dart';
+import 'package:dynamic_routing/pages/mixed_page/sub_page3.dart';
 import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import "package:flutter/material.dart";
 
@@ -9,17 +11,41 @@ class MixedPage extends StatefulWidget {
   State<MixedPage> createState() => _MixedPageState();
 }
 
+/// A fork where the user can either begin a new flow or continue with the old flow.
 class _MixedPageState extends State<MixedPage>
-    with TestPageUI, StackedRoutesParticipator, StackedRoutesInitiator {
+    with StackedRoutesParticipator, StackedRoutesInitiator {
   @override
-  VoidCallback onNextPressed() {
-    // TODO: implement onNextPressed
-    throw UnimplementedError();
+  void dispose() {
+    stackedRoutesInitiator.dispose();
+
+    super.dispose();
   }
 
   @override
-  String pageTitle() {
-    // TODO: implement pageTitle
-    throw UnimplementedError();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Align(
+          alignment: Alignment.center,
+          child: Column(children: [
+            TextButton(
+                onPressed: () => stackedRoutesParticipator.pushNext(context,
+                    currentPage: widget),
+                child: const Text("Continue this flow")),
+            TextButton(
+                onPressed: () {
+                  stackedRoutesInitiator.loadStack(const [
+                    SubPage1(),
+                    SubPage2(),
+                    SubPage3(),
+                  ], lastPageCallback: (context) {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  });
+                  stackedRoutesInitiator.pushFirst(context);
+                },
+                child: const Text("Begin a new flow")),
+          ])),
+    );
   }
 }
