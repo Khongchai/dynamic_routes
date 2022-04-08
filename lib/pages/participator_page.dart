@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../stacked_routes/mixins/participator.dart';
+import '../dynamic_routes/mixins/participator.dart';
 
 class ParticipatorPage extends StatefulWidget {
   final String title;
@@ -12,7 +12,7 @@ class ParticipatorPage extends StatefulWidget {
 }
 
 class _ParticipatorPageState extends State<ParticipatorPage>
-    with StackedRoutesParticipator {
+    with DynamicRoutesParticipator {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +22,7 @@ class _ParticipatorPageState extends State<ParticipatorPage>
         padding: const EdgeInsets.all(16),
         child: TextButton(
           key: Key(widget.title),
-          onPressed: () => stackedRoutesParticipator.pushNext(context),
+          onPressed: () => dynamicRoutesParticipator.pushNext(context),
           child: const Text("Next Page"),
         ),
       ),

@@ -1,7 +1,8 @@
 import 'package:dynamic_routing/pages/mixed_page/mixed_page.dart';
 import 'package:dynamic_routing/pages/participator_page.dart';
-import 'package:dynamic_routing/stacked_routes/mixins/initiator.dart';
 import 'package:flutter/material.dart';
+
+import 'dynamic_routes/mixins/initiator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,12 +44,12 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
+class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
   late List<Widget> _widgets = widget.pageWidgets;
 
   @override
   void dispose() {
-    stackedRoutesInitiator.dispose();
+    dynamicRoutesInitiator.dispose();
 
     super.dispose();
   }
@@ -72,12 +73,12 @@ class _MyHomePageState extends State<MyHomePage> with StackedRoutesInitiator {
         child: TextButton(
           child: const Text("Enter flow"),
           onPressed: () {
-            stackedRoutesInitiator.initializeNewStack(_widgets,
+            dynamicRoutesInitiator.initializeRoutes(_widgets,
                 lastPageCallback: (newContext) {
               Navigator.popUntil(newContext, (route) => route.isFirst);
             });
 
-            stackedRoutesInitiator.pushFirst(context);
+            dynamicRoutesInitiator.pushFirst(context);
           },
         ),
       ),

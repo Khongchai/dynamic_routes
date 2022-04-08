@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A
 class _TestWidget extends StatefulWidget {
   final String pageTitle;
   final VoidCallback onNextPressed;

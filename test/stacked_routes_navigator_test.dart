@@ -1,5 +1,5 @@
-import 'package:dynamic_routing/stacked_routes/mixins/initiator.dart';
-import 'package:dynamic_routing/stacked_routes/mixins/participator.dart';
+import 'package:dynamic_routing/dynamic_routes/mixins/initiator.dart';
+import 'package:dynamic_routing/dynamic_routes/mixins/participator.dart';
 import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 import 'package:mockito/mockito.dart';
@@ -28,11 +28,11 @@ class InitiatorPageMock extends StatefulWidget {
 }
 
 class _InitiatorPageMockState extends State<InitiatorPageMock>
-    with StackedRoutesInitiator {
+    with DynamicRoutesInitiator {
   @override
   void dispose() {
     // Do nothing, we'll do it
-    stackedRoutesInitiator.dispose();
+    dynamicRoutesInitiator.dispose();
 
     super.dispose();
   }
@@ -46,9 +46,9 @@ class _InitiatorPageMockState extends State<InitiatorPageMock>
             TextButton(
                 key: widget.pushFirstButtonKey,
                 onPressed: () {
-                  stackedRoutesInitiator
-                      .initializeNewStack(widget.participatorPages);
-                  stackedRoutesInitiator.pushFirst(context);
+                  dynamicRoutesInitiator
+                      .initializeRoutes(widget.participatorPages);
+                  dynamicRoutesInitiator.pushFirst(context);
                 },
                 child: const Text("Push First")),
             TextButton(
@@ -75,7 +75,7 @@ class MockParticipatorWidget extends StatefulWidget {
 }
 
 class _MockParticipatorWidgetState extends State<MockParticipatorWidget>
-    with StackedRoutesParticipator {
+    with DynamicRoutesParticipator {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -83,12 +83,12 @@ class _MockParticipatorWidgetState extends State<MockParticipatorWidget>
         TextButton(
             key: widget.pushNextButtonKey,
             onPressed: () {
-              stackedRoutesParticipator.pushNext(context);
+              dynamicRoutesParticipator.pushNext(context);
             },
             child: const Text("Push First")),
         TextButton(
             key: widget.backButtonKey,
-            onPressed: () => stackedRoutesParticipator.popCurrent(context),
+            onPressed: () => dynamicRoutesParticipator.popCurrent(context),
             child: const Text("Pop")),
       ],
     );
@@ -130,7 +130,7 @@ void main() {
             tester.state(find.byType(InitiatorPageMock));
 
         expect(
-            initiatorWidgetState.stackedRoutesInitiator.getLoadedPages().length,
+            initiatorWidgetState.dynamicRoutesInitiator.getLoadedPages().length,
             pageWidgetSet1.length);
       });
 
@@ -145,14 +145,14 @@ void main() {
           final _InitiatorPageMockState initiatorWidgetState =
               tester.state(find.byType(InitiatorPageMock));
 
-          initiatorWidgetState.stackedRoutesInitiator
-              .initializeNewStack([participatorWidget]);
+          initiatorWidgetState.dynamicRoutesInitiator
+              .initializeRoutes([participatorWidget]);
 
-          initiatorWidgetState.stackedRoutesInitiator.dispose();
+          initiatorWidgetState.dynamicRoutesInitiator.dispose();
 
           // Shouldn't be any error
-          initiatorWidgetState.stackedRoutesInitiator
-              .initializeNewStack([participatorWidget]);
+          initiatorWidgetState.dynamicRoutesInitiator
+              .initializeRoutes([participatorWidget]);
         });
 
         testWidgets(
@@ -166,13 +166,13 @@ void main() {
           final _InitiatorPageMockState initiatorWidgetState =
               tester.state(find.byType(InitiatorPageMock));
 
-          initiatorWidgetState.stackedRoutesInitiator
-              .initializeNewStack([participatorWidget]);
+          initiatorWidgetState.dynamicRoutesInitiator
+              .initializeRoutes([participatorWidget]);
 
           // We should be able to do this only once per the same set of widgets and there should be an assertion that guards this.
           expect(
-              () => initiatorWidgetState.stackedRoutesInitiator
-                  .initializeNewStack([participatorWidget]),
+              () => initiatorWidgetState.dynamicRoutesInitiator
+                  .initializeRoutes([participatorWidget]),
               throwsAssertionError);
         });
       });
@@ -272,7 +272,7 @@ void main() {
 
       expect(
           getParticipatorStateFromKey(tester, firstParticipatorKey)
-              .stackedRoutesParticipator
+              .dynamicRoutesParticipator
               .getCurrentWidgetHash(),
           participatorPages[0].hashCode);
 
@@ -283,7 +283,7 @@ void main() {
 
       expect(
           getParticipatorStateFromKey(tester, thirdParticipatorKey)
-              .stackedRoutesParticipator
+              .dynamicRoutesParticipator
               .getCurrentWidgetHash(),
           participatorPages[2].hashCode);
 
@@ -292,7 +292,7 @@ void main() {
 
       expect(
           getParticipatorStateFromKey(tester, fourthParticipatorKey)
-              .stackedRoutesParticipator
+              .dynamicRoutesParticipator
               .getCurrentWidgetHash(),
           participatorPages.last.hashCode);
 

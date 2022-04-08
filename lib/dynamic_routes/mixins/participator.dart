@@ -1,26 +1,26 @@
-import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
+import 'package:dynamic_routing/dynamic_routes/dynamic_navigator.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../scoped_stacked_routes_manager.dart';
+import '../scoped_dynamic_routes_manager.dart';
 
 /// Participator mixin
 ///
-/// Participators are the pages that are included in the loadStack method.
+/// Participators are the pages that are included in the initializeRoutes method.
 ///
-/// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
+/// We enforce both the DynamicRoutesInitiator and the DynamicRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
-mixin StackedRoutesParticipator<T extends StatefulWidget> on State<T> {
-  late final _ParticipatorNavigator stackedRoutesParticipator =
+mixin DynamicRoutesParticipator<T extends StatefulWidget> on State<T> {
+  late final _ParticipatorNavigator dynamicRoutesParticipator =
       _ParticipatorNavigator(widget);
 }
 
 class _ParticipatorNavigator {
-  late final StackedRoutesNavigator _navigator;
+  late final DynamicRoutesNavigator _navigator;
   late final Widget _currentWidget;
 
   _ParticipatorNavigator(Widget participatorWidget) {
-    final _scopedStackedRoutesManager = ScopedStackedRoutesManagerSingleton();
-    _navigator = _scopedStackedRoutesManager
+    final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
+    _navigator = _scopedDynamicRoutesManager
         .dispenseNavigatorFromParticipator(participatorWidget);
     _currentWidget = participatorWidget;
   }

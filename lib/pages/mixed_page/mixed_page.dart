@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../stacked_routes/mixins/initiator.dart';
-import '../../stacked_routes/mixins/participator.dart';
+import '../../dynamic_routes/mixins/initiator.dart';
+import '../../dynamic_routes/mixins/participator.dart';
 import '../participator_page.dart';
 
 class MixedPage extends StatefulWidget {
@@ -13,10 +13,10 @@ class MixedPage extends StatefulWidget {
 
 /// A fork where the user can either begin a new flow or continue with the old flow.
 class _MixedPageState extends State<MixedPage>
-    with StackedRoutesParticipator, StackedRoutesInitiator {
+    with DynamicRoutesParticipator, DynamicRoutesInitiator {
   @override
   void dispose() {
-    stackedRoutesInitiator.dispose();
+    dynamicRoutesInitiator.dispose();
 
     super.dispose();
   }
@@ -27,13 +27,13 @@ class _MixedPageState extends State<MixedPage>
       body: Align(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           TextButton(
-              onPressed: () => stackedRoutesParticipator.pushNext(
+              onPressed: () => dynamicRoutesParticipator.pushNext(
                     context,
                   ),
               child: const Text("Continue this flow")),
           TextButton(
               onPressed: () {
-                stackedRoutesInitiator.initializeNewStack(const [
+                dynamicRoutesInitiator.initializeRoutes(const [
                   ParticipatorPage(title: "SubFlow 1 Sub page 1"),
                   ParticipatorPage(title: "SubFlow 1 Sub page 2"),
                   ParticipatorPage(title: "SubFlow 1 Sub page 3"),
@@ -42,12 +42,12 @@ class _MixedPageState extends State<MixedPage>
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 });
-                stackedRoutesInitiator.pushFirst(context);
+                dynamicRoutesInitiator.pushFirst(context);
               },
               child: const Text("Begin sub flow 1")),
           TextButton(
               onPressed: () {
-                stackedRoutesInitiator.initializeNewStack(const [
+                dynamicRoutesInitiator.initializeRoutes(const [
                   ParticipatorPage(title: "SubFlow 2 Sub page 1"),
                   ParticipatorPage(title: "SubFlow 2 Sub page 2"),
                   ParticipatorPage(title: "SubFlow 2 Sub page 3"),
@@ -56,7 +56,7 @@ class _MixedPageState extends State<MixedPage>
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 });
-                stackedRoutesInitiator.pushFirst(context);
+                dynamicRoutesInitiator.pushFirst(context);
               },
               child: const Text("Begin sub flow 2")),
         ]),

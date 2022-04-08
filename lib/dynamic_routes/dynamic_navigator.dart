@@ -1,7 +1,7 @@
-import 'package:dynamic_routing/stacked_routes/page_dll_data.dart';
+import 'package:dynamic_routing/dynamic_routes/page_dll_data.dart';
 import 'package:flutter/material.dart';
 
-abstract class StackedRoutesDisposer {
+abstract class DynamicRoutesDisposer {
   /// This is the only method that is allowed to be called repeatedly, even when it does nothing.
   ///
   /// The reason being that sometimes, you might want to both dispose the references when the Initiator widget's state
@@ -15,7 +15,7 @@ abstract class InitiatorNavigator {
   ///
   /// lastPageCallback is what pushNext will do for the final page in the array,
   /// for example, show a dialog box and then push another page or go back to the main page with the Navigator.
-  void initializeNewStack(List<Widget> pages,
+  void initializeRoutes(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback});
 
   /// Push the first page in the stack
@@ -90,12 +90,12 @@ abstract class ParticipatorNavigator {
 /// And then in the pages that will be included within the stack
 ///
 /// ```dart
-/// class SomeWidget extends StatefulWidget with StackedRoutesParticipator{
+/// class SomeWidget extends StatefulWidget with DynamicRoutesParticipator{
 ///   //...some code
 /// }
 ///
 /// class _SomeWidgetState extends State<Page4> {
-///   void onButtonPressed() => widget.stackedRoutesNavigator.pushNext(context, currentPage: widget);
+///   void onButtonPressed() => widget.dynamicRoutesNavigator.pushNext(context, currentPage: widget);
 ///    //...build methods and whatever
 /// }
 ///```
@@ -106,12 +106,12 @@ abstract class ParticipatorNavigator {
 /// ```dart
 /// @override
 /// dispose(){
-///   stackedRoutesNavigator.dispose();
+///   dynamicRoutesNavigator.dispose();
 ///
 ///   super.dispose();
 /// }
 /// ```
-abstract class StackedRoutesNavigator
+abstract class DynamicRoutesNavigator
     implements InitiatorNavigator, ParticipatorNavigator {
   /// A map between the widget's hash and the doubly-linked list data it belongs to
   late Map<int, PageDLLData> _pageDataMap = {};
@@ -128,7 +128,7 @@ abstract class StackedRoutesNavigator
 }
 
 //TODO also added a mechanism for passing information
-class StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
+class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   List<Widget> getLoadedPages() {
     return _pageDataMap.values.map((e) => e.currentPage).toList();
@@ -140,7 +140,7 @@ class StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
   }
 
   @override
-  initializeNewStack(List<Widget> pages,
+  initializeRoutes(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
     _lastPageCallback = lastPageCallback;
     _isStackLoaded = true;
@@ -178,7 +178,7 @@ class StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
     assert(_isStackLoaded,
         "the loadStack() method should be called first before this can be used.");
     assert(_currentPageHash != null,
-        "Call pushFirst(context) before the first page of this flow to begin stacked navigation");
+        "Call pushFirst(context) before the first page of this flow to begin dynamic navigation");
 
     if (currentPageState!.isLastPage()) {
       _lastPageCallback?.call(context);
@@ -210,7 +210,7 @@ class StackedRoutesNavigatorImpl extends StackedRoutesNavigator {
     assert(_isStackLoaded,
         "the loadStack() method should be called first before this can be used.");
     assert(_currentPageHash != null,
-        "Call pushFirst(context) before the first page of this flow to begin stacked navigation");
+        "Call pushFirst(context) before the first page of this flow to begin dynamic navigation");
 
     _currentPageHash = _currentPage!.previousPage.hashCode;
 

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-import '../scoped_stacked_routes_manager.dart';
-import '../stacked_navigator.dart';
+import '../dynamic_navigator.dart';
+import '../scoped_dynamic_routes_manager.dart';
 
 /// Initiator mixin
 ///
@@ -9,19 +9,19 @@ import '../stacked_navigator.dart';
 ///
 /// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
 /// because we need to dispose the scoped singleton in the dispose method.
-mixin StackedRoutesInitiator<T extends StatefulWidget> on State<T> {
-  late final _InitiatorNavigator stackedRoutesInitiator =
+mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
+  late final _InitiatorNavigator dynamicRoutesInitiator =
       _InitiatorNavigator(widget);
 }
 
-class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
-  final _scopedStackedRoutesManager = ScopedStackedRoutesManagerSingleton();
+class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
+  final _scopedStackedRoutesManager = ScopedDynamicRoutesManagerSingleton();
   final Widget _initiatorWidget;
 
   _InitiatorNavigator(this._initiatorWidget);
 
   @override
-  initializeNewStack(List<Widget> pages,
+  initializeRoutes(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
     assert(pages.isNotEmpty, "The participators page array cannot be empty");
 
@@ -29,10 +29,10 @@ class _InitiatorNavigator implements InitiatorNavigator, StackedRoutesDisposer {
     dispose();
 
     final newInstance =
-        _scopedStackedRoutesManager.dispenseNewStackedRoutesInstance(
+        _scopedStackedRoutesManager.dispenseNewDynamicRoutesInstance(
             participatorWidgets: pages, initiatorWidget: _initiatorWidget);
 
-    newInstance.initializeNewStack(pages, lastPageCallback: lastPageCallback);
+    newInstance.initializeRoutes(pages, lastPageCallback: lastPageCallback);
   }
 
   @override

@@ -1,51 +1,51 @@
 import 'package:flutter/material.dart';
 
-import 'stacked_navigator.dart';
+import 'dynamic_navigator.dart';
 
-class ScopedStackedRoutesManagerSingleton
-    extends _ScopedStackedRoutesManagerImpl {
-  static ScopedStackedRoutesManagerSingleton singletonInstance =
-      ScopedStackedRoutesManagerSingleton._();
+class ScopedDynamicRoutesManagerSingleton
+    extends _ScopedDynamicRoutesManagerImpl {
+  static ScopedDynamicRoutesManagerSingleton singletonInstance =
+      ScopedDynamicRoutesManagerSingleton._();
 
-  ScopedStackedRoutesManagerSingleton._();
+  ScopedDynamicRoutesManagerSingleton._();
 
-  factory ScopedStackedRoutesManagerSingleton() => singletonInstance;
+  factory ScopedDynamicRoutesManagerSingleton() => singletonInstance;
 }
 
-class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
+class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
   /// The map is a map of all hashCode of the widgets in a stack.
-  final Map<int, StackedRoutesNavigator?> _stackedRoutesInstances = {};
+  final Map<int, DynamicRoutesNavigator?> _dynamicRoutesInstances = {};
 
   /// This map is for disposing all participator when the initiator is disposed.
   final Map<int, List<Widget>?> _initiatorAndParticipatorsMap = {};
 
   @override
-  StackedRoutesNavigator dispenseNewStackedRoutesInstance({
+  DynamicRoutesNavigator dispenseNewDynamicRoutesInstance({
     required List<Widget> participatorWidgets,
     required Widget initiatorWidget,
   }) {
-    final newStackedRoutesInstance = StackedRoutesNavigatorImpl();
+    final newDynamicRoutesInstance = DynamicRoutesNavigatorImpl();
 
-    // Bind all widgets in the stack to this newStackedRoutesInstance
+    // Bind all widgets in the stack to this newDynamicRoutesInstance
     for (final widget in participatorWidgets) {
       assert(
-          _stackedRoutesInstances[widget.hashCode] == null,
+          _dynamicRoutesInstances[widget.hashCode] == null,
           "The participator instance ${widget.hashCode} is already bound to a navigation scope."
           "instances and cannot be assigned again until the current instances are disposed.");
-      _stackedRoutesInstances[widget.hashCode] = newStackedRoutesInstance;
+      _dynamicRoutesInstances[widget.hashCode] = newDynamicRoutesInstance;
     }
 
     // Save reference for the disposition of all references to widgets in the stack from this manager
     _initiatorAndParticipatorsMap[initiatorWidget.hashCode] =
         participatorWidgets;
 
-    return newStackedRoutesInstance;
+    return newDynamicRoutesInstance;
   }
 
   @override
-  StackedRoutesNavigator dispenseNavigatorFromParticipator(
+  DynamicRoutesNavigator dispenseNavigatorFromParticipator(
       Widget participator) {
-    final queriedInstance = _stackedRoutesInstances[participator.hashCode];
+    final queriedInstance = _dynamicRoutesInstances[participator.hashCode];
     assert(queriedInstance != null,
         "The widget provided is not tied to any stackedRoutesInstance");
 
@@ -53,7 +53,7 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
   }
 
   @override
-  StackedRoutesNavigator dispenseParticipatorFromInitiator(
+  DynamicRoutesNavigator dispenseParticipatorFromInitiator(
       Widget initiatorWidget) {
     final queriedInitiator =
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
@@ -61,7 +61,7 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
         "The widget provided is not tied to any stackedRoutesInstance. Did you forget to call initializeNewStack()?");
 
     final queriedParticipator =
-        _stackedRoutesInstances[queriedInitiator!.first.hashCode];
+        _dynamicRoutesInstances[queriedInitiator!.first.hashCode];
 
     return queriedParticipator!;
   }
@@ -72,7 +72,7 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode] ?? [];
 
     for (final p in participators) {
-      _stackedRoutesInstances[p.hashCode] = null;
+      _dynamicRoutesInstances[p.hashCode] = null;
     }
 
     _initiatorAndParticipatorsMap[initiatorWidget.hashCode] = null;
@@ -82,13 +82,13 @@ class _ScopedStackedRoutesManagerImpl implements ScopedStackedRoutesManager {
 abstract class ScopedStackedRoutesManager {
   /// A static StackedRoutes manager that dispenses a scoped StackedRoutes singleton bound to
   /// the lifeCycle of the StatefulWidget page it is attached to.
-  StackedRoutesNavigator dispenseNewStackedRoutesInstance({
+  DynamicRoutesNavigator dispenseNewDynamicRoutesInstance({
     required List<Widget> participatorWidgets,
     required Widget initiatorWidget,
   });
 
-  StackedRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
-  StackedRoutesNavigator dispenseParticipatorFromInitiator(Widget widget);
+  DynamicRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
+  DynamicRoutesNavigator dispenseParticipatorFromInitiator(Widget widget);
 
   /// Remove reference to all instantiated objects from the _stackedRoutesInstances array.
   ///
