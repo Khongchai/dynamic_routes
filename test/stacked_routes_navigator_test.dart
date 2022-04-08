@@ -1,4 +1,5 @@
-import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
+import 'package:dynamic_routing/stacked_routes/mixins/initiator.dart';
+import 'package:dynamic_routing/stacked_routes/mixins/participator.dart';
 import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 import 'package:mockito/mockito.dart';
@@ -82,13 +83,12 @@ class _MockParticipatorWidgetState extends State<MockParticipatorWidget>
         TextButton(
             key: widget.pushNextButtonKey,
             onPressed: () {
-              stackedRoutesParticipator.pushNext(context, currentPage: widget);
+              stackedRoutesParticipator.pushNext(context);
             },
             child: const Text("Push First")),
         TextButton(
             key: widget.backButtonKey,
-            onPressed: () => stackedRoutesParticipator.popCurrent(context,
-                currentPage: widget),
+            onPressed: () => stackedRoutesParticipator.popCurrent(context),
             child: const Text("Pop")),
       ],
     );

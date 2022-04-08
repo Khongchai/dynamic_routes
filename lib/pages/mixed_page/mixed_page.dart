@@ -1,6 +1,8 @@
-import 'package:dynamic_routing/pages/participator_page.dart';
-import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
+
+import '../../stacked_routes/mixins/initiator.dart';
+import '../../stacked_routes/mixins/participator.dart';
+import '../participator_page.dart';
 
 class MixedPage extends StatefulWidget {
   const MixedPage({Key? key}) : super(key: key);
@@ -25,8 +27,9 @@ class _MixedPageState extends State<MixedPage>
       body: Align(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           TextButton(
-              onPressed: () => stackedRoutesParticipator.pushNext(context,
-                  currentPage: widget),
+              onPressed: () => stackedRoutesParticipator.pushNext(
+                    context,
+                  ),
               child: const Text("Continue this flow")),
           TextButton(
               onPressed: () {

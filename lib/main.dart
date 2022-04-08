@@ -1,6 +1,6 @@
 import 'package:dynamic_routing/pages/mixed_page/mixed_page.dart';
 import 'package:dynamic_routing/pages/participator_page.dart';
-import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
+import 'package:dynamic_routing/stacked_routes/mixins/initiator.dart';
 import 'package:flutter/material.dart';
 
 void main() {

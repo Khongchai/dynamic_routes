@@ -1,6 +1,7 @@
 import 'package:dynamic_routing/pages/page_mixin.dart';
-import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import "package:flutter/material.dart";
+
+import '../../stacked_routes/mixins/participator.dart';
 
 class SubPage extends StatefulWidget {
   final String title;
@@ -14,8 +15,7 @@ class _SubPageState extends State<SubPage>
     with TestPageUI, StackedRoutesParticipator {
   @override
   VoidCallback onNextPressed() {
-    return () =>
-        stackedRoutesParticipator.pushNext(context, currentPage: widget);
+    return () => stackedRoutesParticipator.pushNext(context);
   }
 
   @override

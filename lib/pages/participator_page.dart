@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../stacked_routes/stacked_navigator.dart';
+import '../stacked_routes/mixins/participator.dart';
 
 class ParticipatorPage extends StatefulWidget {
   final String title;
@@ -16,13 +16,13 @@ class _ParticipatorPageState extends State<ParticipatorPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Align(child: Text(widget.title, style: const TextStyle(fontSize: 30))),
+      body: Align(
+          child: Text(widget.title, style: const TextStyle(fontSize: 30))),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
           key: Key(widget.title),
-          onPressed: () =>
-              stackedRoutesParticipator.pushNext(context, currentPage: widget),
+          onPressed: () => stackedRoutesParticipator.pushNext(context),
           child: const Text("Next Page"),
         ),
       ),
