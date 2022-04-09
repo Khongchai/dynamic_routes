@@ -157,7 +157,9 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
               Navigator.popUntil(newContext, (route) => route.isFirst);
             });
 
-            dynamicRoutesInitiator.pushFirst(context);
+            dynamicRoutesInitiator.pushFirst(context).then((_) {
+              setState(() {});
+            });
           },
         ),
       ),

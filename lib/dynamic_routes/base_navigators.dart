@@ -25,7 +25,7 @@ abstract class InitiatorNavigator {
   ///
   /// This is called in the page before the first page included in the navigation
   /// array.
-  void pushFirst(BuildContext context);
+  Future<T?> pushFirst<T>(BuildContext context);
 
   List<Widget> getLoadedPages();
 }
@@ -40,7 +40,7 @@ abstract class ParticipatorNavigator {
   /// array.
   ///
   /// ex. pushNext(context currentPage: widget);
-  void pushNext(BuildContext context, {required Widget currentPage});
+  Future<T?> pushNext<T>(BuildContext context, {required Widget currentPage});
 
   /// Pop the current page from the array
   ///
@@ -182,7 +182,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   }
 
   @override
-  void pushNext(BuildContext context, {required Widget currentPage}) {
+  Future<T?> pushNext<T>(BuildContext context, {required Widget currentPage}) {
     final currentPageState = _pageDataMap[currentPage.hashCode];
 
     assert(
@@ -202,22 +202,24 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
       _lastPageCallback?.call(context);
 
       _isPostLastPage = true;
+
+      return Future.value(null);
     } else {
       _currentPageHash = currentPageState.nextPage.hashCode;
-      Navigator.of(context).push(
+      return Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => currentPageState.nextPage!));
     }
   }
 
   @override
-  void pushFirst(BuildContext context) {
+  Future<T?> pushFirst<T>(BuildContext context) {
     assert(
         _isStackLoaded,
         "the iniitalizeRoutes() method should be called first before this can "
         "be used.");
 
     final firstPage = _pageDataMap.values.first;
-    Navigator.of(context)
+    return Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => firstPage.currentPage));
   }
 

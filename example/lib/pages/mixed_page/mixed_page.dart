@@ -67,15 +67,21 @@ class _MixedPageState extends State<MixedPage>
       body: Align(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           TextButton(
-              onPressed: () => dynamicRoutesParticipator.pushNext(
+              onPressed: () => dynamicRoutesParticipator
+                      .pushNext(
                     context,
-                  ),
+                  )
+                      .then((value) {
+                    setState(() {});
+                  }),
               child: const Text("Continue this flow")),
           TextButton(
               onPressed: () {
                 dynamicRoutesInitiator.initializeRoutes(widget.subFlowSet1,
                     lastPageCallback: widget.subFlowSet1Callback);
-                dynamicRoutesInitiator.pushFirst(context);
+                dynamicRoutesInitiator.pushFirst(context).then((_) {
+                  setState(() {});
+                });
               },
               child: Text(widget.isSubSubFlow
                   ? "Begin sub sub flow 1"
@@ -84,7 +90,9 @@ class _MixedPageState extends State<MixedPage>
               onPressed: () {
                 dynamicRoutesInitiator.initializeRoutes(widget.subFlowSet2,
                     lastPageCallback: widget.subFlowSet2Callback);
-                dynamicRoutesInitiator.pushFirst(context);
+                dynamicRoutesInitiator.pushFirst(context).then((_) {
+                  setState(() {});
+                });
               },
               child: Text(widget.isSubSubFlow
                   ? "Begin sub sub flow 2"

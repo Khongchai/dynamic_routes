@@ -39,10 +39,10 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   }
 
   @override
-  pushFirst(BuildContext context) {
+  Future<T?> pushFirst<T>(BuildContext context) {
     final instance = _scopedStackedRoutesManager
         .dispenseParticipatorFromInitiator(initiatorWidget);
-    instance.pushFirst(context);
+    return instance.pushFirst(context);
   }
 
   @override

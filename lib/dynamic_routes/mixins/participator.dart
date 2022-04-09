@@ -39,8 +39,8 @@ class _ParticipatorNavigator {
     navigator.popCurrent(context, currentPage: currentWidget);
   }
 
-  void pushNext(BuildContext context) {
-    navigator.pushNext(context, currentPage: currentWidget);
+  Future<T?> pushNext<T>(BuildContext context) {
+    return navigator.pushNext(context, currentPage: currentWidget);
   }
 
   bool pushNextOfLastPageCalled() {
