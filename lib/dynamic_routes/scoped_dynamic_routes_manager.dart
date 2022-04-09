@@ -12,12 +12,19 @@ class ScopedDynamicRoutesManagerSingleton
   factory ScopedDynamicRoutesManagerSingleton() => singletonInstance;
 }
 
-class _ScopedDynamicRoutesManagerImpl implements ScopedDynamicRoutesManager {
+class _ScopedDynamicRoutesManagerImpl
+    implements ScopedDynamicRoutesManager, ScopedCacheManager {
   /// The map is a map of all hashCode of the widgets in a array.
   final Map<int, DynamicRoutesNavigator?> _dynamicRoutesInstances = {};
 
-  /// This map is for disposing all participator when the initiator is disposed.
+  /// Get participators from initiator widget hashcode
   final Map<int, List<Widget>?> _initiatorAndParticipatorsMap = {};
+
+  /// Get initiator from participator widget hashcode
+  final Map<int, Widget?> _participatorAndInitiatorMap = {};
+
+  /// Get cache from initiator widget hashCode
+  final Map<int, dynamic> _initiatorCacheMap = {};
 
   @override
   DynamicRoutesNavigator dispenseNewDynamicRoutesInstance({
@@ -34,6 +41,8 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedDynamicRoutesManager {
           "navigation scope. instances and cannot be assigned again until "
           "the current instances are disposed.");
       _dynamicRoutesInstances[widget.hashCode] = newDynamicRoutesInstance;
+
+      _participatorAndInitiatorMap[widget.hashCode] = initiatorWidget;
     }
 
     // Save reference for the disposition of all references to widgets in the
@@ -71,15 +80,39 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedDynamicRoutesManager {
   }
 
   @override
+  void setCacheOfThisScope(Widget widget, dynamic newCacheValue,
+      {required bool isInitiator}) {
+    if (isInitiator) {
+      _initiatorCacheMap[widget.hashCode] = newCacheValue;
+    } else {
+      final initiator = _participatorAndInitiatorMap[widget.hashCode];
+      _initiatorCacheMap[initiator.hashCode] = newCacheValue;
+    }
+  }
+
+  @override
+  dynamic getCacheOfThisScope(Widget widget, {required bool isInitiator}) {
+    if (isInitiator) {
+      return _initiatorCacheMap[widget.hashCode];
+    }
+
+    final initiator = _participatorAndInitiatorMap[widget.hashCode];
+
+    return _initiatorCacheMap[initiator.hashCode];
+  }
+
+  @override
   void disposeDynamicRoutesInstance(Widget initiatorWidget) {
     final participators =
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode] ?? [];
 
     for (final p in participators) {
       _dynamicRoutesInstances[p.hashCode] = null;
+      _participatorAndInitiatorMap[p.hashCode] = null;
     }
 
     _initiatorAndParticipatorsMap[initiatorWidget.hashCode] = null;
+    _initiatorCacheMap[initiatorWidget.hashCode] = null;
   }
 }
 
@@ -92,10 +125,18 @@ abstract class ScopedDynamicRoutesManager {
   });
 
   DynamicRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
-  DynamicRoutesNavigator dispenseParticipatorFromInitiator(Widget widget);
+
+  DynamicRoutesNavigator dispenseParticipatorFromInitiator(Widget initiator);
 
   /// Remove reference to all instantiated objects from the_dynamicRoutesInstances
   /// array.
   ///
   void disposeDynamicRoutesInstance(Widget widget);
+}
+
+abstract class ScopedCacheManager {
+  getCacheOfThisScope(Widget initiator, {required bool isInitiator});
+
+  setCacheOfThisScope(Widget initiator, dynamic newCacheValue,
+      {required bool isInitiator});
 }

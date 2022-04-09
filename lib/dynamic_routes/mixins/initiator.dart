@@ -17,9 +17,11 @@ mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
 
 class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   final _scopedStackedRoutesManager = ScopedDynamicRoutesManagerSingleton();
-  final Widget _initiatorWidget;
 
-  _InitiatorNavigator(this._initiatorWidget);
+  @visibleForTesting
+  final Widget initiatorWidget;
+
+  _InitiatorNavigator(this.initiatorWidget);
 
   @override
   initializeRoutes(List<Widget> pages,
@@ -31,7 +33,7 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
 
     final newInstance =
         _scopedStackedRoutesManager.dispenseNewDynamicRoutesInstance(
-            participatorWidgets: pages, initiatorWidget: _initiatorWidget);
+            participatorWidgets: pages, initiatorWidget: initiatorWidget);
 
     newInstance.initializeRoutes(pages, lastPageCallback: lastPageCallback);
   }
@@ -39,20 +41,30 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   @override
   pushFirst(BuildContext context) {
     final instance = _scopedStackedRoutesManager
-        .dispenseParticipatorFromInitiator(_initiatorWidget);
+        .dispenseParticipatorFromInitiator(initiatorWidget);
     instance.pushFirst(context);
   }
 
   @override
   List<Widget> getLoadedPages() {
     final instance = _scopedStackedRoutesManager
-        .dispenseParticipatorFromInitiator(_initiatorWidget);
+        .dispenseParticipatorFromInitiator(initiatorWidget);
 
     return instance.getLoadedPages();
   }
 
   @override
   void dispose() {
-    _scopedStackedRoutesManager.disposeDynamicRoutesInstance(_initiatorWidget);
+    _scopedStackedRoutesManager.disposeDynamicRoutesInstance(initiatorWidget);
+  }
+
+  dynamic getCache() {
+    return _scopedStackedRoutesManager.getCacheOfThisScope(initiatorWidget,
+        isInitiator: true);
+  }
+
+  void setCache(dynamic cacheData) {
+    _scopedStackedRoutesManager.setCacheOfThisScope(initiatorWidget, cacheData,
+        isInitiator: true);
   }
 }

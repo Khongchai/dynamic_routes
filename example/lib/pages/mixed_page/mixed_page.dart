@@ -50,8 +50,8 @@ class _MixedPageState extends State<MixedPage>
                 dynamicRoutesInitiator.pushFirst(context);
               },
               child: Text(widget.isSubSubFlow
-                  ? "Begin sub flow 1"
-                  : "Begin sub sub flow 1")),
+                  ? "Begin sub sub flow 1"
+                  : "Begin sub flow 1")),
           TextButton(
               onPressed: () {
                 dynamicRoutesInitiator.initializeRoutes(widget.subFlowSet2,
@@ -59,8 +59,8 @@ class _MixedPageState extends State<MixedPage>
                 dynamicRoutesInitiator.pushFirst(context);
               },
               child: Text(widget.isSubSubFlow
-                  ? "Begin sub flow 2"
-                  : "Begin sub sub flow 2")),
+                  ? "Begin sub sub flow 2"
+                  : "Begin sub flow 2")),
         ]),
       ),
     );

@@ -17,15 +17,26 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
+      // One might argue: "What's new with this? We can already do this using
+      // the normal Navigator class".
+      //
+      // Well, that's right, but what you can't do is that do exactly this, but
+      // deciding which page to be shown
+      //
+      // or which place to be swapped at runtime, all from just one place without
+      // the pages even knowing where they are going,
+      // the only thing they do is pushing the next thing in the array.
       home: MyHomePage(title: 'Stacked Routes Test', pageWidgets: [
         const ParticipatorPage(title: "Page 1"),
         const ParticipatorPage(title: "Page 2"),
         // A page that can both continue the flow and branch off into a new flow.
-        // In real applications, you'd of course use route predicates to pop back to something.
+        // In real applications, you'd of course use route predicates to pop back
+        // to something.
         //
         // For simplicity's sake, we'll just do pop multiple times for this example.
         MixedPage(
-          // This isSubSubFlow has nothing to do with the library, it's just that I'm too lazy to change the title of subsubflow pages.
+          // This isSubSubFlow has nothing to do with the library, it's just that
+          // I'm too lazy to change the title of subsubflow pages.
           isSubSubFlow: false,
           subFlowSet1: const [
             ParticipatorPage(title: "SubFlow 1 Sub page 1"),
@@ -43,14 +54,14 @@ class MyApp extends StatelessWidget {
             const ParticipatorPage(title: "SubFlow 1 Sub page 3"),
             // A sub flow within sub flow....sub-ception!
             MixedPage(
-                // This isSubSubFlow has nothing to do with the library, it's just that I'm too lazy to change the title of subsubflow pages.
+                // This isSubSubFlow has nothing to do with the library, it's
+                // just that I'm too lazy to change the title of subsubflow pages.
                 isSubSubFlow: true,
                 subFlowSet1: const [
                   ParticipatorPage(title: "SubSubflow 1 Sub Page 1"),
                   ParticipatorPage(title: "SubSubflow 1 Sub Page 2"),
                 ],
                 subFlowSet1Callback: (context) {
-                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
@@ -61,10 +72,12 @@ class MyApp extends StatelessWidget {
                 subFlowSet2Callback: (context) {
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
-                  Navigator.of(context).pop();
                 }),
+            const ParticipatorPage(title: "SubFlow 1 Sub page 5"),
           ],
           subFlowSet2Callback: (context) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             Navigator.of(context).pop();

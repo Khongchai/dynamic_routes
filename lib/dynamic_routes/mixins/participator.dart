@@ -16,29 +16,44 @@ mixin DynamicRoutesParticipator<T extends StatefulWidget> on State<T> {
 }
 
 class _ParticipatorNavigator {
-  late final DynamicRoutesNavigator _navigator;
-  late final Widget _currentWidget;
+  final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
+
+  @visibleForTesting
+  late final DynamicRoutesNavigator navigator;
+
+  @visibleForTesting
+  late final Widget currentWidget;
 
   _ParticipatorNavigator(Widget participatorWidget) {
-    final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
-    _navigator = _scopedDynamicRoutesManager
+    navigator = _scopedDynamicRoutesManager
         .dispenseNavigatorFromParticipator(participatorWidget);
-    _currentWidget = participatorWidget;
+
+    currentWidget = participatorWidget;
   }
 
   int? getCurrentWidgetHash() {
-    return _navigator.getCurrentWidgetHash();
+    return navigator.getCurrentWidgetHash();
   }
 
   void popCurrent(BuildContext context) {
-    _navigator.popCurrent(context, currentPage: _currentWidget);
+    navigator.popCurrent(context, currentPage: currentWidget);
   }
 
   void pushNext(BuildContext context) {
-    _navigator.pushNext(context, currentPage: _currentWidget);
+    navigator.pushNext(context, currentPage: currentWidget);
   }
 
   bool pushNextOfLastPageCalled() {
-    return _navigator.pushNextOfLastPageCalled();
+    return navigator.pushNextOfLastPageCalled();
+  }
+
+  dynamic getCache() {
+    return _scopedDynamicRoutesManager.getCacheOfThisScope(currentWidget,
+        isInitiator: false);
+  }
+
+  void setCache(dynamic cacheData) {
+    _scopedDynamicRoutesManager.setCacheOfThisScope(currentWidget, cacheData,
+        isInitiator: false);
   }
 }

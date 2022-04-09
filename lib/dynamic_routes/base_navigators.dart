@@ -140,7 +140,6 @@ abstract class DynamicRoutesNavigator
   Function(BuildContext context)? _lastPageCallback;
 }
 
-//TODO also added a mechanism for passing information
 class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   List<Widget> getLoadedPages() {
@@ -154,7 +153,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
   @override
   initializeRoutes(List<Widget> pages,
-      {Function(BuildContext context)? lastPageCallback}) {
+      {Function(BuildContext context)? lastPageCallback, dynamic scopedCache}) {
     _lastPageCallback = lastPageCallback;
     _isStackLoaded = true;
     _pageDataMap = _generatePageStates(pages: pages);
