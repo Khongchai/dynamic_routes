@@ -12,8 +12,8 @@ class ScopedDynamicRoutesManagerSingleton
   factory ScopedDynamicRoutesManagerSingleton() => singletonInstance;
 }
 
-class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
-  /// The map is a map of all hashCode of the widgets in a stack.
+class _ScopedDynamicRoutesManagerImpl implements ScopedDynamicRoutesManager {
+  /// The map is a map of all hashCode of the widgets in a array.
   final Map<int, DynamicRoutesNavigator?> _dynamicRoutesInstances = {};
 
   /// This map is for disposing all participator when the initiator is disposed.
@@ -26,16 +26,18 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
   }) {
     final newDynamicRoutesInstance = DynamicRoutesNavigatorImpl();
 
-    // Bind all widgets in the stack to this newDynamicRoutesInstance
+    // Bind all widgets in the array to this newDynamicRoutesInstance
     for (final widget in participatorWidgets) {
       assert(
           _dynamicRoutesInstances[widget.hashCode] == null,
-          "The participator instance ${widget.hashCode} is already bound to a navigation scope."
-          "instances and cannot be assigned again until the current instances are disposed.");
+          "The participator instance ${widget.hashCode} is already bound to a "
+          "navigation scope. instances and cannot be assigned again until "
+          "the current instances are disposed.");
       _dynamicRoutesInstances[widget.hashCode] = newDynamicRoutesInstance;
     }
 
-    // Save reference for the disposition of all references to widgets in the stack from this manager
+    // Save reference for the disposition of all references to widgets in the
+    // array from this manager
     _initiatorAndParticipatorsMap[initiatorWidget.hashCode] =
         participatorWidgets;
 
@@ -47,7 +49,7 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
       Widget participator) {
     final queriedInstance = _dynamicRoutesInstances[participator.hashCode];
     assert(queriedInstance != null,
-        "The widget provided is not tied to any stackedRoutesInstance");
+        "The widget provided is not tied to any _dynamicRoutesInstances.");
 
     return queriedInstance!;
   }
@@ -57,8 +59,10 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
       Widget initiatorWidget) {
     final queriedInitiator =
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
-    assert(queriedInitiator != null,
-        "The widget provided is not tied to any stackedRoutesInstance. Did you forget to call initializeNewStack()?");
+    assert(
+        queriedInitiator != null,
+        "The widget provided is not tied to any _dynamicRoutesInstances."
+        " Did you forget to call initializeRoutes()?");
 
     final queriedParticipator =
         _dynamicRoutesInstances[queriedInitiator!.first.hashCode];
@@ -67,7 +71,7 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
   }
 
   @override
-  void disposeStackedRoutesInstance(Widget initiatorWidget) {
+  void disposeDynamicRoutesInstance(Widget initiatorWidget) {
     final participators =
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode] ?? [];
 
@@ -79,9 +83,9 @@ class _ScopedDynamicRoutesManagerImpl implements ScopedStackedRoutesManager {
   }
 }
 
-abstract class ScopedStackedRoutesManager {
-  /// A static StackedRoutes manager that dispenses a scoped StackedRoutes singleton bound to
-  /// the lifeCycle of the StatefulWidget page it is attached to.
+abstract class ScopedDynamicRoutesManager {
+  /// A static DynamicRoutes manager that dispenses a scoped DynamicRoutes
+  /// singleton bound to the lifeCycle of the StatefulWidget page it is attached to.
   DynamicRoutesNavigator dispenseNewDynamicRoutesInstance({
     required List<Widget> participatorWidgets,
     required Widget initiatorWidget,
@@ -90,7 +94,8 @@ abstract class ScopedStackedRoutesManager {
   DynamicRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
   DynamicRoutesNavigator dispenseParticipatorFromInitiator(Widget widget);
 
-  /// Remove reference to all instantiated objects from the _stackedRoutesInstances array.
+  /// Remove reference to all instantiated objects from the_dynamicRoutesInstances
+  /// array.
   ///
-  void disposeStackedRoutesInstance(Widget widget);
+  void disposeDynamicRoutesInstance(Widget widget);
 }

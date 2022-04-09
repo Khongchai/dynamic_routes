@@ -10,7 +10,7 @@ _Note: I'll be using the words Widget, Page, and Route interchangeably_
 
 This library comprises of two main parts, the _Initiator_, and the _Participator_.
 
-First, we'd need to mark the participating page with the _DynamicRoutesParticipator_ mixin.
+We can begin by marking the participating page with the _DynamicRoutesParticipator_ mixin.
 This would give that component access to the dynamicRoutesParticipator instance that is tied to the
 scope of the initiator page that we'll mark with the _DynamicRoutesInitiator_.
 

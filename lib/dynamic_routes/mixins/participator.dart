@@ -7,8 +7,9 @@ import '../scoped_dynamic_routes_manager.dart';
 ///
 /// Participators are the pages that are included in the initializeRoutes method.
 ///
-/// We enforce both the DynamicRoutesInitiator and the DynamicRoutesParticipator to use StatefulWidget
-/// because we need to dispose the scoped singleton in the dispose method.
+/// We enforce both the DynamicRoutesInitiator and the DynamicRoutesParticipator
+/// to use StatefulWidget because we need to dispose the scoped singleton in the
+/// dispose method.
 mixin DynamicRoutesParticipator<T extends StatefulWidget> on State<T> {
   late final _ParticipatorNavigator dynamicRoutesParticipator =
       _ParticipatorNavigator(widget);

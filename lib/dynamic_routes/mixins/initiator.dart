@@ -7,8 +7,9 @@ import '../scoped_dynamic_routes_manager.dart';
 ///
 /// The initiator page is the page directly before the flow.
 ///
-/// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator to use StatefulWidget
-/// because we need to dispose the scoped singleton in the dispose method.
+/// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator
+/// to use StatefulWidget because we need to dispose the scoped singleton in the
+/// dispose method.
 mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
   late final _InitiatorNavigator dynamicRoutesInitiator =
       _InitiatorNavigator(widget);
@@ -52,6 +53,6 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
 
   @override
   void dispose() {
-    _scopedStackedRoutesManager.disposeStackedRoutesInstance(_initiatorWidget);
+    _scopedStackedRoutesManager.disposeDynamicRoutesInstance(_initiatorWidget);
   }
 }
