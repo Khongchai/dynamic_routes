@@ -1,4 +1,4 @@
-name: dynamic_routing
+name: dynamic_routes
 description: A super easy-to-use routing library for Flutter that allows you to determine routes and the order of those routes all in one place.
 repository: https://github.com/Khongchai/dynamic_routes
 version: 1.0.0

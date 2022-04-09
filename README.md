@@ -51,12 +51,9 @@ class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesInitiator {
 And then in the pages that are included in the array (the "participating" pages):
 
 ```dart
-class SomeWidget extends StatefulWidget with DynamicRoutesParticipator{
-  //...some code
-}
 
-class _SomeWidgetState extends State<SomeWidget> {
-  void onButtonPressed() => widget.dynamicRoutesParticipator.pushNext(context);
+class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesParticipator{
+  void onButtonPressed() => dynamicRoutesParticipator.pushNext(context);
    //...build methods and whatever
 }
 ```
