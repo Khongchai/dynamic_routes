@@ -34,8 +34,36 @@ class _MixedPageState extends State<MixedPage>
   }
 
   @override
+  void initState() {
+    super.initState();
+    dynamicRoutesInitiator.setCache(0);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final value = dynamicRoutesParticipator.getCache();
+    final subFlowValue = dynamicRoutesInitiator.getCache();
+
     return Scaffold(
+      floatingActionButton: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
+              child:
+                  Text("Increment Cached Value of the Sub Flow: $subFlowValue"),
+              onPressed: () {
+                dynamicRoutesInitiator.setCache(subFlowValue + 1);
+                setState(() {});
+              }),
+          ElevatedButton(
+              child: Text("Increment Cached Value of This Flow: $value"),
+              onPressed: () {
+                dynamicRoutesParticipator.setCache(value + 1);
+                setState(() {});
+              }),
+        ],
+      ),
       body: Align(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           TextButton(

@@ -28,8 +28,8 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
       {Function(BuildContext context)? lastPageCallback}) {
     assert(pages.isNotEmpty, "The participators page array cannot be empty");
 
-    // //Ensure clean up of the old one.
-    dispose();
+    // //Ensure clean up of the old one, but not the cache.
+    dispose(clearCache: false);
 
     final newInstance =
         _scopedStackedRoutesManager.dispenseNewDynamicRoutesInstance(
@@ -54,8 +54,9 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   }
 
   @override
-  void dispose() {
-    _scopedStackedRoutesManager.disposeDynamicRoutesInstance(initiatorWidget);
+  void dispose({bool clearCache = true}) {
+    _scopedStackedRoutesManager.disposeDynamicRoutesInstance(initiatorWidget,
+        clearCacheRelatedData: clearCache);
   }
 
   dynamic getCache() {

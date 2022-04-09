@@ -9,7 +9,7 @@ abstract class DynamicRoutesDisposer {
   /// the Initiator widget's state /// is disposed and when the callback is called,
   /// but you are not sure which one should happen first. The fix is to just call
   /// the dispose method in both places (or more).
-  void dispose();
+  void dispose({bool clearCache = true});
 }
 
 abstract class InitiatorNavigator {

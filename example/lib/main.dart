@@ -116,14 +116,32 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
   }
 
   @override
+  void initState() {
+    dynamicRoutesInitiator.setCache(0);
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final value = dynamicRoutesInitiator.getCache();
     return Scaffold(
-      floatingActionButton: TextButton(
-        child: const Text("Shuffle page order"),
-        onPressed: () {
-          final newWidgets = [..._widgets]..shuffle();
-          _widgets = newWidgets;
-        },
+      floatingActionButton: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
+            child: const Text("Shuffle page order"),
+            onPressed: () {
+              final newWidgets = [..._widgets]..shuffle();
+              _widgets = newWidgets;
+            },
+          ),
+          ElevatedButton(
+              onPressed: () =>
+                  setState(() => dynamicRoutesInitiator.setCache(value + 1)),
+              child: Text("Increment cached value: $value")),
+        ],
       ),
       appBar: AppBar(
         title: Text(widget.title),

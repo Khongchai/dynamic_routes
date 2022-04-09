@@ -102,17 +102,22 @@ class _ScopedDynamicRoutesManagerImpl
   }
 
   @override
-  void disposeDynamicRoutesInstance(Widget initiatorWidget) {
+  void disposeDynamicRoutesInstance(Widget initiatorWidget,
+      {required bool clearCacheRelatedData}) {
     final participators =
         _initiatorAndParticipatorsMap[initiatorWidget.hashCode] ?? [];
 
     for (final p in participators) {
       _dynamicRoutesInstances[p.hashCode] = null;
-      _participatorAndInitiatorMap[p.hashCode] = null;
+      if (clearCacheRelatedData) {
+        _participatorAndInitiatorMap[p.hashCode] = null;
+      }
     }
 
     _initiatorAndParticipatorsMap[initiatorWidget.hashCode] = null;
-    _initiatorCacheMap[initiatorWidget.hashCode] = null;
+    if (clearCacheRelatedData) {
+      _initiatorCacheMap[initiatorWidget.hashCode] = null;
+    }
   }
 }
 
@@ -131,7 +136,8 @@ abstract class ScopedDynamicRoutesManager {
   /// Remove reference to all instantiated objects from the_dynamicRoutesInstances
   /// array.
   ///
-  void disposeDynamicRoutesInstance(Widget widget);
+  void disposeDynamicRoutesInstance(Widget widget,
+      {required bool clearCacheRelatedData});
 }
 
 abstract class ScopedCacheManager {

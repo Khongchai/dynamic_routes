@@ -22,4 +22,15 @@ class _SubPageState extends State<SubPage>
   String pageTitle() {
     return widget.title;
   }
+
+  @override
+  Widget? floatingActionButton() {
+    int value = dynamicRoutesParticipator.getCache();
+    return FloatingActionButton(
+        child: Text("Increment Cached Value: $value"),
+        onPressed: () {
+          dynamicRoutesParticipator.setCache(value + 1);
+          setState(() {});
+        });
+  }
 }

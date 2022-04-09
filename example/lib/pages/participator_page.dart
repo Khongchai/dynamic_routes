@@ -17,7 +17,14 @@ class _ParticipatorPageState extends State<ParticipatorPage>
     with DynamicRoutesParticipator {
   @override
   Widget build(BuildContext context) {
+    final value = dynamicRoutesParticipator.getCache();
     return Scaffold(
+      floatingActionButton: ElevatedButton(
+          child: Text("Increment Cached Value: $value"),
+          onPressed: () {
+            dynamicRoutesParticipator.setCache(value + 1);
+            setState(() {});
+          }),
       backgroundColor: widget.backgroundColor,
       body: Align(
           child: Text(widget.title, style: const TextStyle(fontSize: 30))),
