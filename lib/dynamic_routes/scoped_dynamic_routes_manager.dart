@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'dynamic_navigator.dart';
+import 'base_navigators.dart';
 
 class ScopedDynamicRoutesManagerSingleton
     extends _ScopedDynamicRoutesManagerImpl {

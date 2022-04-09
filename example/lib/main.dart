@@ -1,3 +1,6 @@
+import 'package:dynamic_routing/dynamic_routes/mixins/initiator.dart';
+import 'package:example/pages/mixed_page/mixed_page.dart';
+import 'package:example/pages/participator_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -7,39 +10,81 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Stacked Routes Test',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Stacked Routes Test', pageWidgets: [
+        const ParticipatorPage(title: "Page 1"),
+        const ParticipatorPage(title: "Page 2"),
+        // A page that can both continue the flow and branch off into a new flow.
+        // In real applications, you'd of course use route predicates to pop back to something.
+        //
+        // For simplicity's sake, we'll just do pop multiple times for this example.
+        MixedPage(
+          // This isSubSubFlow has nothing to do with the library, it's just that I'm too lazy to change the title of subsubflow pages.
+          isSubSubFlow: false,
+          subFlowSet1: const [
+            ParticipatorPage(title: "SubFlow 1 Sub page 1"),
+            ParticipatorPage(title: "SubFlow 1 Sub page 2"),
+            ParticipatorPage(title: "SubFlow 1 Sub page 3"),
+          ],
+          subFlowSet1Callback: (context) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          },
+          subFlowSet2: [
+            const ParticipatorPage(title: "SubFlow 1 Sub page 1"),
+            const ParticipatorPage(title: "SubFlow 1 Sub page 2"),
+            const ParticipatorPage(title: "SubFlow 1 Sub page 3"),
+            // A sub flow within sub flow....sub-ception!
+            MixedPage(
+                // This isSubSubFlow has nothing to do with the library, it's just that I'm too lazy to change the title of subsubflow pages.
+                isSubSubFlow: true,
+                subFlowSet1: const [
+                  ParticipatorPage(title: "SubSubflow 1 Sub Page 1"),
+                  ParticipatorPage(title: "SubSubflow 1 Sub Page 2"),
+                ],
+                subFlowSet1Callback: (context) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+                subFlowSet2: const [
+                  ParticipatorPage(title: "SubSubflow 2 Sub page 1"),
+                  ParticipatorPage(title: "SubSubflow 2 Sub page 2"),
+                ],
+                subFlowSet2Callback: (context) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                }),
+          ],
+          subFlowSet2Callback: (context) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          },
+        ),
+        const ParticipatorPage(title: "Page 4"),
+        const ParticipatorPage(title: "Page 5"),
+        const ParticipatorPage(title: "Page 6"),
+      ]),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  final List<Widget> pageWidgets;
+  const MyHomePage({
+    Key? key,
+    required this.title,
+    required this.pageWidgets,
+  }) : super(key: key);
 
   final String title;
 
@@ -47,69 +92,44 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
+  late List<Widget> _widgets = widget.pageWidgets;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void dispose() {
+    dynamicRoutesInitiator.dispose();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
+      floatingActionButton: TextButton(
+        child: const Text("Shuffle page order"),
+        onPressed: () {
+          final newWidgets = [..._widgets]..shuffle();
+          _widgets = newWidgets;
+        },
+      ),
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+      body: const Center(child: Text("Stacked Routes test")),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: TextButton(
+          child: const Text("Enter flow"),
+          onPressed: () {
+            dynamicRoutesInitiator.initializeRoutes(_widgets,
+                lastPageCallback: (newContext) {
+              Navigator.popUntil(newContext, (route) => route.isFirst);
+            });
+
+            dynamicRoutesInitiator.pushFirst(context);
+          },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

@@ -174,9 +174,9 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     final currentPageState = _pageDataMap[currentPage.hashCode];
 
     assert(currentPageState != null,
-        "The widget provided was not included in the initial array when loadStack() was called.");
+        "The widget provided was not included in the initial array when iniitalizeRoutes() was called.");
     assert(_isStackLoaded,
-        "the loadStack() method should be called first before this can be used.");
+        "the iniitalizeRoutes() method should be called first before this can be used.");
     assert(_currentPageHash != null,
         "Call pushFirst(context) before the first page of this flow to begin dynamic navigation");
 
@@ -194,7 +194,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   void pushFirst(BuildContext context) {
     assert(_isStackLoaded,
-        "the loadStack() method should be called first before this can be used.");
+        "the iniitalizeRoutes() method should be called first before this can be used.");
 
     final firstPage = _pageDataMap.values.first;
     Navigator.of(context)
@@ -206,9 +206,9 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     final _currentPage = _pageDataMap[currentPage.hashCode];
 
     assert(_currentPage != null,
-        "The page this method is called in was not included in the array when loadStack() was called");
+        "The page this method is called in was not included in the array when iniitalizeRoutes() was called");
     assert(_isStackLoaded,
-        "the loadStack() method should be called first before this can be used.");
+        "the iniitalizeRoutes() method should be called first before this can be used.");
     assert(_currentPageHash != null,
         "Call pushFirst(context) before the first page of this flow to begin dynamic navigation");
 

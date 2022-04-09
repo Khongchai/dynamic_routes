@@ -1,4 +1,4 @@
-import 'package:dynamic_routing/dynamic_routes/dynamic_navigator.dart';
+import 'package:dynamic_routing/dynamic_routes/base_navigators.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../scoped_dynamic_routes_manager.dart';

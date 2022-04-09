@@ -1,11 +1,13 @@
+import 'package:dynamic_routing/dynamic_routes/mixins/participator.dart';
 import 'package:flutter/material.dart';
-
-import '../dynamic_routes/mixins/participator.dart';
 
 class ParticipatorPage extends StatefulWidget {
   final String title;
+  final Color backgroundColor;
 
-  const ParticipatorPage({required this.title, Key? key}) : super(key: key);
+  const ParticipatorPage(
+      {this.backgroundColor = Colors.white, required this.title, Key? key})
+      : super(key: key);
 
   @override
   State<ParticipatorPage> createState() => _ParticipatorPageState();
@@ -16,6 +18,7 @@ class _ParticipatorPageState extends State<ParticipatorPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: widget.backgroundColor,
       body: Align(
           child: Text(widget.title, style: const TextStyle(fontSize: 30))),
       bottomNavigationBar: Padding(

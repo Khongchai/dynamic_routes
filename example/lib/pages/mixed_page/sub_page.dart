@@ -1,7 +1,7 @@
-import 'package:dynamic_routing/pages/page_mixin.dart';
+import 'package:dynamic_routing/dynamic_routes/mixins/participator.dart';
 import "package:flutter/material.dart";
 
-import '../../dynamic_routes/mixins/participator.dart';
+import '../page_mixin.dart';
 
 class SubPage extends StatefulWidget {
   final String title;
