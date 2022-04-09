@@ -150,3 +150,50 @@ Widget buildButtons(){
         );
 }
 ```
+
+## Cache
+
+This library also supports a simple caching method.
+
+You can call this whenever, and whereever, from both both the participators and initiator pages.
+
+```dart
+void saveToCache(WhatEverClassThisThingIs someData){
+  dynamicRoutesParticipator.setCache(someData);
+
+  // Or
+
+  dynamicRoutesInitiator.setCache(someData);
+}
+```
+
+Once set, this can be accessed from all members of the navigation.
+
+```dart
+
+Whatever readFromCache(){
+  return dynamicRoutesParticipator.getCache() as Whatever;
+}
+
+// Or
+
+Whatever readFromCache(){
+  return dynamicRoutesInitiator.getCache() as Whatever;
+}
+
+```
+
+By default, cache data gets cleared alongside the instance of the initiator page,
+this can be overridden directly from the _dispose()_ method.
+
+```dart
+@override
+void initState(){
+  dynamicRoutesInitiator.dispose(clearCache: false); // true by default.
+
+  super.initState();
+}
+
+```
+
+If your concern is the separation of concerns, then this caching is probably not for you.
