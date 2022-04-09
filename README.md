@@ -116,3 +116,37 @@ Widget buildButtons(){
   );
 }
 ```
+
+## Doubly-Nested Navigation
+
+I don't know when or where or why someone might need this, but as a result of the lib's route-scoping, you can also have a subflow within another subflow.
+
+```dart
+Widget buildButtons(){
+  return TextButton(
+            child: Text("Click this to branch off"),
+            onPressed: (){
+              dynamicRoutesInitiator.initializeRoutes(const [
+                // Where SubflowPage class is both a navigator and an initiator.
+                SubflowPage(pages: [
+                  Page1(),
+                  Page2(),
+                  Page3(),
+                  SubflowPage(pages: [
+                    Page1(),
+                    if (page2Required) Page2(),
+                    if (page4BeforePage3) ...[Page4(), Page3()] else
+                      [
+                        Page3(),
+                        Page4(),
+                      ]
+                  ])
+                ]),
+                ParticipatorPage(title: "SubFlow 1 Sub page 3"),
+              ], lastPageCallback: (context) {
+                  // Do whatever
+              });
+            }
+        );
+}
+```
