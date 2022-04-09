@@ -120,7 +120,7 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.2"
-  dynamic_routing:
+  dynamic_routes:
     dependency: "direct main"
     description:
       path: ".."

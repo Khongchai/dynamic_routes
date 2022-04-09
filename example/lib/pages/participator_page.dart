@@ -1,4 +1,4 @@
-import 'package:dynamic_routing/dynamic_routes/mixins/participator.dart';
+import 'package:dynamic_routes/dynamic_routes/mixins/participator.dart';
 import 'package:flutter/material.dart';
 
 class ParticipatorPage extends StatefulWidget {

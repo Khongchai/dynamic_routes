@@ -1,6 +1,6 @@
-import 'package:dynamic_routing/dynamic_routes/base_navigators.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../base_navigators.dart';
 import '../scoped_dynamic_routes_manager.dart';
 
 /// Participator mixin

@@ -1,4 +1,4 @@
-import 'package:dynamic_routing/dynamic_routes/mixins/initiator.dart';
+import 'package:dynamic_routes/dynamic_routes/mixins/initiator.dart';
 import 'package:example/pages/mixed_page/mixed_page.dart';
 import 'package:example/pages/participator_page.dart';
 import 'package:flutter/material.dart';

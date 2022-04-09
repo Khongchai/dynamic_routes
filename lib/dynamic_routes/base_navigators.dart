@@ -1,4 +1,4 @@
-import 'package:dynamic_routing/dynamic_routes/page_dll_data.dart';
+import 'package:dynamic_routes/dynamic_routes/page_dll_data.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicRoutesDisposer {
