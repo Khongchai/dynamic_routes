@@ -1,14 +1,18 @@
 # Dynamic Routes
 
-Dynamic Routes is a library that lets you specify in advance which routes should be shown and in what order.
-This is invaluable when you manage your flow and would like some routes to show, or order to be swapped, based
-on some information that you obtain during runtime.
+Dynamic Routes is a library that lets you specify in advance which routes should be shown and in what 
+order. This is invaluable for flow management -- when you want some routes to show, or their order 
+swapped, based on some information that you obtain during runtime.
+
+_This method assumes your pages don't depend on any data from other pages. Technically, they can still 
+read one another's data, but that becomes a problem when the order of your pages get swapped, or some 
+pages are conditionally removed from the navigation array._
 
 # Overview
 
 _Note: I'll be using the words Widget, Page, and Route interchangeably_
 
-This library comprises of two main parts, the _Initiator_, and the _Participator_.
+This library comprises two main parts, the _Initiator_, and the _Participator_.
 
 We can begin by marking the participating page with the _DynamicRoutesParticipator_ mixin.
 This would give that component access to the dynamicRoutesParticipator instance that is tied to the
@@ -17,11 +21,8 @@ scope of the initiator page that we'll mark with the _DynamicRoutesInitiator_.
 For the page directly before the flow:
 
 ```dart
-class SomeWidget extends StatefulWidget with DynamicRoutesInitiator {
- //...some code
-}
 
-class _SomeWidgetState extends State<SomeWidget> {
+class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesInitiator {
 
   //...some code
 
@@ -47,7 +48,7 @@ class _SomeWidgetState extends State<SomeWidget> {
 }
 ```
 
-And then, in the pages that are included in the array (the "participating" pages).
+And then in the pages that are included in the array (the "participating" pages):
 
 ```dart
 class SomeWidget extends StatefulWidget with DynamicRoutesParticipator{
@@ -61,7 +62,8 @@ class _SomeWidgetState extends State<SomeWidget> {
 ```
 
 We can dispose the _DynamicRoutesInitiator_ instance along with the page itself by calling the
-initiator's _dispose_ method in the state's _dispose_ method. This will also dispose all _DynamicRoutesParticipator_ instances.
+initiator's _dispose_ method in the state's _dispose_ method. This will also dispose all 
+_DynamicRoutesParticipator_ instances.
 
 ```dart
 
@@ -77,9 +79,10 @@ void dispose() {
 ## Nested Navigation
 
 You can also have a sort of sub-routing navigation, where for example, the second member in
-the initiator array is itself, also an initiator and can branch of into its dynamic routing navigation.
+the initiator array is itself, also an initiator, and can branch off into its dynamic routing navigation.
 
-To do this, we simply mark the state of the second page with both the participator and the initiator mixins.
+To do this, we simply mark the state of the second page with both the participator and the initiator 
+mixins.
 
 ```dart
 class _MixedPageState extends State<MixedPage>
@@ -119,7 +122,8 @@ Widget buildButtons(){
 
 ## Doubly-Nested Navigation
 
-I don't know when or where or why someone might need this, but as a result of the lib's route-scoping, you can also have a subflow within another subflow.
+I don't know when or where or why someone might need this, but as a result of the lib's route-scoping, 
+you can also have a subflow within another subflow.
 
 ```dart
 Widget buildButtons(){
@@ -151,11 +155,11 @@ Widget buildButtons(){
 }
 ```
 
-## Cache
+## Caching
 
 This library also supports a simple caching method.
 
-You can call this whenever, and whereever, from both both the participators and initiator pages.
+You can call this whenever, and wherever, from both the participators and initiator pages.
 
 ```dart
 void saveToCache(WhatEverClassThisThingIs someData){
@@ -196,4 +200,5 @@ void initState(){
 
 ```
 
-If your concern is the separation of concerns, then this caching is probably not for you.
+If your concern is the separation of concerns, then this caching is probably not for you and you're 
+better off using some dependency injection libraries for your cache.
