@@ -93,6 +93,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   final List<Widget> pageWidgets;
+
   const MyHomePage({
     Key? key,
     required this.title,
@@ -155,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
             dynamicRoutesInitiator.initializeRoutes(_widgets,
                 lastPageCallback: (newContext) {
               Navigator.popUntil(newContext, (route) => route.isFirst);
-            });
+            }, errorBuilder: (context, errorDetails) {});
 
             dynamicRoutesInitiator.pushFirst(context).then((_) {
               setState(() {});
