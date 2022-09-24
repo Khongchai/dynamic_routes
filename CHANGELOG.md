@@ -12,3 +12,4 @@ Name change and docs edit
 - Added custom error-handling method.
 - Added a method to pop to a specific page.
 - Can now control the transition animation.
+- The initiator example in the docs was missing a step.
