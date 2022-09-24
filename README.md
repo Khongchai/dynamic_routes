@@ -41,6 +41,8 @@ class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesInitiator {
         // Do something; maybe return to homepage.
       }
     );
+    
+    dynamicRoutesInitiator.pushFirst(context);
   }
 
   //...some code
@@ -185,7 +187,7 @@ Whatever readFromCache(){
 ```
 
 By default, cache data gets cleared alongside the instance of the initiator page,
-this can be overridden directly from the _dispose()_ method.
+this can be overridden directly from the _dispose_ method.
 
 ```dart
 @override
