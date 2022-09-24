@@ -7,7 +7,7 @@ import '../scoped_dynamic_routes_manager.dart';
 ///
 /// The initiator page is the page directly before the flow.
 ///
-/// We enforce both the StackedRoutesInitiator and the StackedRoutesParticipator
+/// We enforce both the DynamicRoutesInitiator and the DynamicRoutesParticipator
 /// to use StatefulWidget because we need to dispose the scoped singleton in the
 /// dispose method.
 mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
@@ -16,7 +16,7 @@ mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
 }
 
 class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
-  final _scopedStackedRoutesManager = ScopedDynamicRoutesManagerSingleton();
+  final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
 
   @visibleForTesting
   final Widget initiatorWidget;
@@ -32,7 +32,7 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
     dispose(clearCache: false);
 
     final newInstance =
-        _scopedStackedRoutesManager.dispenseNewDynamicRoutesInstance(
+        _scopedDynamicRoutesManager.dispenseNewDynamicRoutesInstance(
             participatorWidgets: pages, initiatorWidget: initiatorWidget);
 
     newInstance.initializeRoutes(pages, lastPageCallback: lastPageCallback);
@@ -40,14 +40,14 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
 
   @override
   Future<T?> pushFirst<T>(BuildContext context) {
-    final instance = _scopedStackedRoutesManager
+    final instance = _scopedDynamicRoutesManager
         .dispenseParticipatorFromInitiator(initiatorWidget);
     return instance.pushFirst(context);
   }
 
   @override
   List<Widget> getLoadedPages() {
-    final instance = _scopedStackedRoutesManager
+    final instance = _scopedDynamicRoutesManager
         .dispenseParticipatorFromInitiator(initiatorWidget);
 
     return instance.getLoadedPages();
@@ -55,17 +55,17 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
 
   @override
   void dispose({bool clearCache = true}) {
-    _scopedStackedRoutesManager.disposeDynamicRoutesInstance(initiatorWidget,
+    _scopedDynamicRoutesManager.disposeDynamicRoutesInstance(initiatorWidget,
         clearCacheRelatedData: clearCache);
   }
 
   dynamic getCache() {
-    return _scopedStackedRoutesManager.getCacheOfThisScope(initiatorWidget,
+    return _scopedDynamicRoutesManager.getCacheOfThisScope(initiatorWidget,
         isInitiator: true);
   }
 
   void setCache(dynamic cacheData) {
-    _scopedStackedRoutesManager.setCacheOfThisScope(initiatorWidget, cacheData,
+    _scopedDynamicRoutesManager.setCacheOfThisScope(initiatorWidget, cacheData,
         isInitiator: true);
   }
 }

@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Stacked Routes Test',
+      title: 'Dynamic Routes Test',
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       // or which place to be swapped at runtime, all from just one place without
       // the pages even knowing where they are going,
       // the only thing they do is pushing the next thing in the array.
-      home: MyHomePage(title: 'Stacked Routes Test', pageWidgets: [
+      home: MyHomePage(title: 'Dynamic Routes Test', pageWidgets: [
         const ParticipatorPage(title: "Page 1"),
         const ParticipatorPage(title: "Page 2"),
         // A page that can both continue the flow and branch off into a new flow.
@@ -146,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: const Center(child: Text("Stacked Routes test")),
+      body: const Center(child: Text("Dynamic Routes test")),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
