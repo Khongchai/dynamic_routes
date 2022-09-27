@@ -6,6 +6,8 @@ import 'package:mockito/mockito.dart';
 
 const valueForPreviousPage = "Mock Value";
 
+const currentPageIndexText = "Current Page Index: ";
+
 class MockBuildContext extends Mock implements BuildContext {}
 
 /// For testing the internal states of the navigator
@@ -67,11 +69,13 @@ class ParticipatorWidget extends StatefulWidget {
   final Key? pushNextButtonKey;
   final Key? backButtonKey;
   final Key? backButtonWithValueKey;
+  final int? pageIndex;
 
   const ParticipatorWidget(
       {this.pushNextButtonKey,
       this.backButtonKey,
       this.backButtonWithValueKey,
+      this.pageIndex,
       Key? key})
       : super(key: key);
 
@@ -82,11 +86,13 @@ class ParticipatorWidget extends StatefulWidget {
 class _ParticipatorWidgetState extends State<ParticipatorWidget>
     with DynamicRoutesParticipator {
   String? valueFromPoppedPage;
+  late final int? pageIndex = widget.pageIndex;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        if (pageIndex != null) Text(currentPageIndexText + "$pageIndex"),
         if (valueFromPoppedPage != null) Text(valueFromPoppedPage!),
         TextButton(
             key: widget.pushNextButtonKey,
@@ -299,6 +305,54 @@ void main() {
         expect(foundText, findsOneWidget);
       });
 
+      testWidgets("popFor behaves correctly.", (WidgetTester tester) async {
+        const firstParticipatorNextButtonKey = Key("fnk");
+        const secondParticipatorNextButtonKey = Key("snk");
+        const thirdParticipatorNextButtonKey = Key("tnk");
+        const fourthParticipatorNextButtonKey = Key("fnk");
+        const fifthParticipatorKey = Key("fipk");
+        const participatorPages = [
+          ParticipatorWidget(pushNextButtonKey: firstParticipatorNextButtonKey),
+          ParticipatorWidget(
+            pushNextButtonKey: secondParticipatorNextButtonKey,
+          ),
+          ParticipatorWidget(
+            pushNextButtonKey: thirdParticipatorNextButtonKey,
+          ),
+          ParticipatorWidget(
+            pushNextButtonKey: fourthParticipatorNextButtonKey,
+          ),
+          ParticipatorWidget(key: fifthParticipatorKey),
+        ];
+
+        const initiatorPushFirstKey = Key("pushKey");
+        await tester.pumpWidget(const InitiatorWidget(
+          participatorPages: participatorPages,
+          pushFirstButtonKey: initiatorPushFirstKey,
+        ));
+
+        await tester.tap(find.byKey(initiatorPushFirstKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(firstParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(secondParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(fourthParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        //
+        // getParticipatorStateFromKey(tester, fifthParticipatorKey)
+        //     .dynamicRoutesParticipator
+        //     .popFor(4);
+        //
+        // expect(
+        //     getParticipatorStateFromKey(tester, fifthParticipatorKey)
+        //         .dynamicRoutesParticipator
+        //         .getCurrentWidgetHash(),
+        //     participatorPages[0]);
+      });
+
       testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
         const firstParticipatorKey = Key("fpk");
         const firstParticipatorNextButtonKey = Key("fnk");
@@ -309,17 +363,21 @@ void main() {
         const fourthParticipatorKey = Key("tpk");
         const participatorPages = [
           ParticipatorWidget(
-              key: firstParticipatorKey,
-              pushNextButtonKey: firstParticipatorNextButtonKey),
+            key: firstParticipatorKey,
+            pushNextButtonKey: firstParticipatorNextButtonKey,
+            pageIndex: 0,
+          ),
           ParticipatorWidget(
             key: secondParticipatorKey,
             pushNextButtonKey: secondParticipatorNextButtonKey,
+            pageIndex: 1,
           ),
           ParticipatorWidget(
             key: thirdParticipatorKey,
             pushNextButtonKey: thirdParticipatorNextButtonKey,
+            pageIndex: 2,
           ),
-          ParticipatorWidget(key: fourthParticipatorKey),
+          ParticipatorWidget(key: fourthParticipatorKey, pageIndex: 3),
         ];
 
         const initiatorPushFirstKey = Key("pushKey");
@@ -331,31 +389,19 @@ void main() {
         await tester.tap(find.byKey(initiatorPushFirstKey));
         await tester.pumpAndSettle();
 
-        expect(
-            getParticipatorStateFromKey(tester, firstParticipatorKey)
-                .dynamicRoutesParticipator
-                .getCurrentWidgetHash(),
-            participatorPages[0].hashCode);
+        expect(find.text(currentPageIndexText + "0"), findsOneWidget);
 
         await tester.tap(find.byKey(firstParticipatorNextButtonKey));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(secondParticipatorNextButtonKey));
         await tester.pumpAndSettle();
 
-        expect(
-            getParticipatorStateFromKey(tester, thirdParticipatorKey)
-                .dynamicRoutesParticipator
-                .getCurrentWidgetHash(),
-            participatorPages[2].hashCode);
+        expect(find.text(currentPageIndexText + "2"), findsOneWidget);
 
         await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
         await tester.pumpAndSettle();
 
-        expect(
-            getParticipatorStateFromKey(tester, fourthParticipatorKey)
-                .dynamicRoutesParticipator
-                .getCurrentWidgetHash(),
-            participatorPages.last.hashCode);
+        expect(find.text(currentPageIndexText + "3"), findsOneWidget);
       });
     });
 
