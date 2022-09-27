@@ -9,7 +9,8 @@ Name change and docs edit
 ## 1.1.0
 
 - Some parts of the docs and the variable names were still referencing the old "StackedRoutes" name.
-- Added custom error-handling method.
+- Added a method to pop for a number of pages between 0 to pages.length.
+- DynamicRoutesNavigator.pop now conforms to the Navigator.pop interface.
 - Added a method to pop to a specific page.
 - Can now control the transition animation.
 - The initiator example in the docs was missing a step.

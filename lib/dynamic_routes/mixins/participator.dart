@@ -35,8 +35,9 @@ class _ParticipatorNavigator {
     return navigator.getCurrentWidgetHash();
   }
 
-  void popCurrent(BuildContext context) {
-    navigator.popCurrent(context, currentPage: currentWidget);
+  void popCurrent<T>(BuildContext context, [T? result]) {
+    navigator.popCurrent(context,
+        currentPage: currentWidget, popResult: result);
   }
 
   Future<T?> pushNext<T>(BuildContext context) {

@@ -45,7 +45,8 @@ abstract class ParticipatorNavigator {
   /// Pop the current page from the array
   ///
   /// Prefer this over Navigator.of(context).pop for all participators widget.
-  void popCurrent(BuildContext context, {required Widget currentPage});
+  void popCurrent<T>(BuildContext context,
+      {required Widget currentPage, T? popResult});
 
   bool pushNextOfLastPageCalled();
 }
@@ -224,7 +225,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   }
 
   @override
-  void popCurrent(BuildContext context, {required Widget currentPage}) {
+  void popCurrent<T>(BuildContext context,
+      {required Widget currentPage, T? popResult}) async {
     final _currentPage = _pageDataMap[currentPage.hashCode];
 
     assert(
@@ -242,7 +244,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
     _currentPageHash = _currentPage!.previousPage.hashCode;
 
-    Navigator.pop(context);
+    return Navigator.of(context).pop(popResult);
   }
 
   @override

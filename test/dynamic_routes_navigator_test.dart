@@ -4,6 +4,8 @@ import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 import 'package:mockito/mockito.dart';
 
+const valueForPreviousPage = "Mock Value";
+
 class MockBuildContext extends Mock implements BuildContext {}
 
 /// For testing the internal states of the navigator
@@ -64,9 +66,13 @@ class _InitiatorWidgetState extends State<InitiatorWidget>
 class ParticipatorWidget extends StatefulWidget {
   final Key? pushNextButtonKey;
   final Key? backButtonKey;
+  final Key? backButtonWithValueKey;
 
   const ParticipatorWidget(
-      {this.pushNextButtonKey, this.backButtonKey, Key? key})
+      {this.pushNextButtonKey,
+      this.backButtonKey,
+      this.backButtonWithValueKey,
+      Key? key})
       : super(key: key);
 
   @override
@@ -75,20 +81,30 @@ class ParticipatorWidget extends StatefulWidget {
 
 class _ParticipatorWidgetState extends State<ParticipatorWidget>
     with DynamicRoutesParticipator {
+  String? valueFromPoppedPage;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        if (valueFromPoppedPage != null) Text(valueFromPoppedPage!),
         TextButton(
             key: widget.pushNextButtonKey,
-            onPressed: () {
-              dynamicRoutesParticipator.pushNext(context);
+            onPressed: () async {
+              final value = await dynamicRoutesParticipator.pushNext(context);
+              valueFromPoppedPage = value;
+              setState(() {});
             },
             child: const Text("Push First")),
         TextButton(
             key: widget.backButtonKey,
             onPressed: () => dynamicRoutesParticipator.popCurrent(context),
             child: const Text("Pop")),
+        TextButton(
+            key: widget.backButtonWithValueKey,
+            onPressed: () => dynamicRoutesParticipator.popCurrent(
+                context, valueForPreviousPage),
+            child: const Text("Pop with value to previous page")),
       ],
     );
   }
@@ -250,6 +266,37 @@ void main() {
 
         await tester.tap(find.byKey(initiatorPushFirstKey));
         await tester.pumpAndSettle();
+      });
+
+      testWidgets(
+          "Popping with value using dynamicRoutesNavigator should work like Navigator.pop",
+          (WidgetTester tester) async {
+        const initiatorPushFirstKey = Key("pushKey");
+        const participatorPushNextKey = Key("pushNextKey");
+        const participatorBackButtonWithValueKey = Key("backKeyWithValue");
+        await tester.pumpWidget(const InitiatorWidget(
+          participatorPages: [
+            ParticipatorWidget(
+              pushNextButtonKey: participatorPushNextKey,
+            ),
+            ParticipatorWidget(
+              backButtonWithValueKey: participatorBackButtonWithValueKey,
+            ),
+          ],
+          pushFirstButtonKey: initiatorPushFirstKey,
+        ));
+
+        await tester.tap(find.byKey(initiatorPushFirstKey));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(participatorPushNextKey));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(participatorBackButtonWithValueKey));
+        await tester.pumpAndSettle();
+
+        final foundText = find.text(valueForPreviousPage);
+        expect(foundText, findsOneWidget);
       });
 
       testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
