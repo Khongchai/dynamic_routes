@@ -46,6 +46,7 @@ class _InitiatorWidgetState extends State<InitiatorWidget>
       home: Builder(
         builder: (context) => Column(
           children: [
+            const Text(currentPageIndexText + "-1"),
             TextButton(
                 key: widget.pushFirstButtonKey,
                 onPressed: () {
@@ -116,9 +117,15 @@ class _ParticipatorWidgetState extends State<ParticipatorWidget>
   }
 }
 
-_ParticipatorWidgetState getParticipatorStateFromKey(
-    WidgetTester tester, Key key) {
-  return tester.state(find.byKey(key)) as _ParticipatorWidgetState;
+class _TestingUtils {
+  static _ParticipatorWidgetState getParticipatorStateFromKey(
+      WidgetTester tester, Key key) {
+    return tester.state(find.byKey(key)) as _ParticipatorWidgetState;
+  }
+
+  static void expectPageExistsAtIndex(int number) {
+    expect(find.text(currentPageIndexText + number.toString()), findsOneWidget);
+  }
 }
 
 void main() {
@@ -312,17 +319,26 @@ void main() {
         const fourthParticipatorNextButtonKey = Key("fnk");
         const fifthParticipatorKey = Key("fipk");
         const participatorPages = [
-          ParticipatorWidget(pushNextButtonKey: firstParticipatorNextButtonKey),
+          ParticipatorWidget(
+            pushNextButtonKey: firstParticipatorNextButtonKey,
+            pageIndex: 0,
+          ),
           ParticipatorWidget(
             pushNextButtonKey: secondParticipatorNextButtonKey,
+            pageIndex: 1,
           ),
           ParticipatorWidget(
             pushNextButtonKey: thirdParticipatorNextButtonKey,
+            pageIndex: 2,
           ),
           ParticipatorWidget(
             pushNextButtonKey: fourthParticipatorNextButtonKey,
+            pageIndex: 3,
           ),
-          ParticipatorWidget(key: fifthParticipatorKey),
+          ParticipatorWidget(
+            key: fifthParticipatorKey,
+            pageIndex: 4,
+          ),
         ];
 
         const initiatorPushFirstKey = Key("pushKey");
@@ -341,16 +357,36 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(fourthParticipatorNextButtonKey));
         await tester.pumpAndSettle();
-        //
-        // getParticipatorStateFromKey(tester, fifthParticipatorKey)
-        //     .dynamicRoutesParticipator
-        //     .popFor(4);
-        //
-        // expect(
-        //     getParticipatorStateFromKey(tester, fifthParticipatorKey)
-        //         .dynamicRoutesParticipator
-        //         .getCurrentWidgetHash(),
-        //     participatorPages[0]);
+
+        _TestingUtils.getParticipatorStateFromKey(tester, fifthParticipatorKey)
+            .dynamicRoutesParticipator
+            .popFor(4);
+
+        _TestingUtils.expectPageExistsAtIndex(0);
+
+        _TestingUtils.getParticipatorStateFromKey(
+          tester,
+          firstParticipatorKey,
+        ).dynamicRoutesParticipator.popFor(99999);
+
+        _TestingUtils.expectPageExistsAtIndex(-1);
+
+        await tester.tap(find.byKey(initiatorPushFirstKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(firstParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(secondParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(fourthParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+
+        _TestingUtils.getParticipatorStateFromKey(tester, fifthParticipatorKey)
+            .dynamicRoutesParticipator
+            .popFor(3);
+
+        _TestingUtils.expectPageExistsAtIndex(1);
       });
 
       testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
@@ -389,19 +425,19 @@ void main() {
         await tester.tap(find.byKey(initiatorPushFirstKey));
         await tester.pumpAndSettle();
 
-        expect(find.text(currentPageIndexText + "0"), findsOneWidget);
+        _TestingUtils.expectPageExistsAtIndex(0);
 
         await tester.tap(find.byKey(firstParticipatorNextButtonKey));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(secondParticipatorNextButtonKey));
         await tester.pumpAndSettle();
 
-        expect(find.text(currentPageIndexText + "2"), findsOneWidget);
+        _TestingUtils.expectPageExistsAtIndex(2);
 
         await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
         await tester.pumpAndSettle();
 
-        expect(find.text(currentPageIndexText + "3"), findsOneWidget);
+        _TestingUtils.expectPageExistsAtIndex(3);
       });
     });
 
