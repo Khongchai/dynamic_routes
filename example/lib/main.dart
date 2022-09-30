@@ -159,6 +159,7 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
             });
 
             dynamicRoutesInitiator.pushFirst(context).then((_) {
+              // Call setState to refresh the displayed cached value.
               setState(() {});
             });
           },

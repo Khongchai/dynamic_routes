@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 class ParticipatorPage extends StatefulWidget {
   final String title;
   final Color backgroundColor;
+  final int? withPopFor;
 
   const ParticipatorPage(
-      {this.backgroundColor = Colors.white, required this.title, Key? key})
+      {this.backgroundColor = Colors.white,
+      required this.title,
+      this.withPopFor,
+      Key? key})
       : super(key: key);
 
   @override
@@ -19,6 +23,17 @@ class _ParticipatorPageState extends State<ParticipatorPage>
   Widget build(BuildContext context) {
     final value = dynamicRoutesParticipator.getCache();
     return Scaffold(
+      appBar: widget.withPopFor != null
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => dynamicRoutesParticipator.popFor(
+                    context, widget.withPopFor!),
+              ),
+              title: Text("Pop for: ${widget.withPopFor}"),
+              centerTitle: true,
+            )
+          : null,
       floatingActionButton: ElevatedButton(
           child: Text("Increment Cached Value: $value"),
           onPressed: () {

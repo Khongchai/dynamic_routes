@@ -362,16 +362,23 @@ void main() {
         await tester.tap(find.byKey(fourthParticipatorNextButtonKey));
         await tester.pumpAndSettle();
 
-        _TestingUtils.getParticipatorStateFromKey(tester, fifthParticipatorKey)
-            .dynamicRoutesParticipator
-            .popFor(context, 4);
+        _TestingUtils.expectPageExistsAtIndex(4);
+
+        final fifthParticipatorState =
+            _TestingUtils.getParticipatorStateFromKey(
+                tester, fifthParticipatorKey);
+        fifthParticipatorState.dynamicRoutesParticipator
+            .popFor(fifthParticipatorState.context, 4);
+        await tester.pumpAndSettle();
 
         _TestingUtils.expectPageExistsAtIndex(0);
 
-        _TestingUtils.getParticipatorStateFromKey(
-          tester,
-          firstParticipatorKey,
-        ).dynamicRoutesParticipator.popFor(context, 99999);
+        final firstParticipatorState =
+            _TestingUtils.getParticipatorStateFromKey(
+                tester, firstParticipatorKey);
+        firstParticipatorState.dynamicRoutesParticipator
+            .popFor(firstParticipatorState.context, 99999);
+        await tester.pumpAndSettle();
 
         _TestingUtils.expectPageExistsAtIndex(-1);
 
@@ -386,9 +393,12 @@ void main() {
         await tester.tap(find.byKey(fourthParticipatorNextButtonKey));
         await tester.pumpAndSettle();
 
-        _TestingUtils.getParticipatorStateFromKey(tester, fifthParticipatorKey)
-            .dynamicRoutesParticipator
-            .popFor(context, 3);
+        final fifthParticipatorState2 =
+            _TestingUtils.getParticipatorStateFromKey(
+                tester, fifthParticipatorKey);
+        fifthParticipatorState2.dynamicRoutesParticipator
+            .popFor(fifthParticipatorState2.context, 3);
+        await tester.pumpAndSettle();
 
         _TestingUtils.expectPageExistsAtIndex(1);
       });

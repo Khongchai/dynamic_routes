@@ -238,7 +238,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     final poppablePages = _currentPage.index + 1;
     final loopCount = min(numberOfPagesToPop, poppablePages);
     for (int i = 0; i < loopCount; i++) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(popResult);
     }
   }
 
