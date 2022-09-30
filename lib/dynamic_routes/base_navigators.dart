@@ -60,12 +60,20 @@ abstract class ParticipatorNavigator {
   /// it will only pop until the initiator page.
   ///
   /// If you wanna pop until the navigator page, you can just do
-  /// popFor(double.infinity)
+  ///
+  /// ```dart
+  ///   popFor(double.infinity)
+  /// ```
+  ///
   /// or
-  /// popFor(dynamicRoutesParticipator.getCurrentPageIndex() + 1).
+  ///
+  /// ```dart
+  ///   popFor(dynamicRoutesParticipator.getCurrentPageIndex() + 1)
+  /// ```
   void popFor<T>(BuildContext context, int numberOfPagesToPop,
       {required Widget currentPage, T? popResult});
 
+  /// For verifying the progress of the flow. If this is true, the flow has ended.
   bool pushNextOfLastPageCalled();
 }
 
