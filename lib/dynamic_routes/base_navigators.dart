@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dynamic_routes/dynamic_routes/page_dll_data.dart';
 import 'package:flutter/material.dart';
 
@@ -46,6 +48,11 @@ abstract class ParticipatorNavigator {
   ///
   /// Prefer this over Navigator.of(context).pop for all participators widget.
   void popCurrent<T>(BuildContext context,
+      {required Widget currentPage, T? popResult});
+
+  /// Pop for a specified number of pages. Regardless of the provided number,
+  /// it will only pop until the initiator page.
+  void popFor<T>(BuildContext context, int numberOfPagesToPop,
       {required Widget currentPage, T? popResult});
 
   bool pushNextOfLastPageCalled();
@@ -153,7 +160,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   }
 
   @override
-  initializeRoutes(List<Widget> pages,
+  void initializeRoutes(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback, dynamic scopedCache}) {
     _lastPageCallback = lastPageCallback;
     _isStackLoaded = true;
@@ -174,6 +181,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
         previousPage: previousPage,
         currentPage: currentPage,
         nextPage: nextPage,
+        index: i,
       );
 
       pageRoutes[currentPage.hashCode] = currentPageStates;
@@ -184,22 +192,9 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
   @override
   Future<T?> pushNext<T>(BuildContext context, {required Widget currentPage}) {
-    final currentPageState = _pageDataMap[currentPage.hashCode];
+    final currentPageState = _getCurrentPageDLLData(currentPage);
 
-    assert(
-        currentPageState != null,
-        "The widget provided was not included in the initial array when "
-        "initializeRoutes() was called.");
-    assert(
-        _isStackLoaded,
-        "the initalizeRoutes() method should be called first before this can be "
-        "used.");
-    assert(
-        _currentPageHash != null,
-        "Call pushFirst(context) before the first page of this flow to begin "
-        "dynamic navigation");
-
-    if (currentPageState!.isLastPage()) {
+    if (currentPageState.isLastPage()) {
       _lastPageCallback?.call(context);
 
       _isPostLastPage = true;
@@ -227,6 +222,32 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   void popCurrent<T>(BuildContext context,
       {required Widget currentPage, T? popResult}) async {
+    final _currentPage = _getCurrentPageDLLData(currentPage);
+
+    _currentPageHash = _currentPage.previousPage.hashCode;
+
+    return Navigator.of(context).pop(popResult);
+  }
+
+  @override
+  void popFor<T>(BuildContext context, int numberOfPagesToPop,
+      {required Widget currentPage, T? popResult}) async {
+    final _currentPage = _getCurrentPageDLLData(currentPage);
+
+    // + 1 because we allow the first participator page to be popped as well.
+    final poppablePages = _currentPage.index + 1;
+    final loopCount = min(numberOfPagesToPop, poppablePages);
+    for (int i = 0; i < loopCount; i++) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  bool pushNextOfLastPageCalled() {
+    return _isPostLastPage;
+  }
+
+  PageDLLData _getCurrentPageDLLData(Widget currentPage) {
     final _currentPage = _pageDataMap[currentPage.hashCode];
 
     assert(
@@ -242,13 +263,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
         "Call pushFirst(context) before the first page of this flow to begin "
         "dynamic navigation");
 
-    _currentPageHash = _currentPage!.previousPage.hashCode;
-
-    return Navigator.of(context).pop(popResult);
-  }
-
-  @override
-  bool pushNextOfLastPageCalled() {
-    return _isPostLastPage;
+    return _currentPage!;
   }
 }

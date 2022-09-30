@@ -57,4 +57,8 @@ class _ParticipatorNavigator {
     _scopedDynamicRoutesManager.setCacheOfThisScope(currentWidget, cacheData,
         isInitiator: false);
   }
+
+  void popFor(BuildContext context, int amount) {
+    navigator.popFor(context, amount, currentPage: currentWidget);
+  }
 }

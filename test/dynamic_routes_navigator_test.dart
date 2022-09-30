@@ -123,6 +123,8 @@ class _TestingUtils {
     return tester.state(find.byKey(key)) as _ParticipatorWidgetState;
   }
 
+  /// Index -1 = initiator page.
+  /// Index > -1 = participator pages.
   static void expectPageExistsAtIndex(int number) {
     expect(find.text(currentPageIndexText + number.toString()), findsOneWidget);
   }
@@ -313,6 +315,7 @@ void main() {
       });
 
       testWidgets("popFor behaves correctly.", (WidgetTester tester) async {
+        const firstParticipatorKey = Key("fpk");
         const firstParticipatorNextButtonKey = Key("fnk");
         const secondParticipatorNextButtonKey = Key("snk");
         const thirdParticipatorNextButtonKey = Key("tnk");
@@ -321,6 +324,7 @@ void main() {
         const participatorPages = [
           ParticipatorWidget(
             pushNextButtonKey: firstParticipatorNextButtonKey,
+            key: firstParticipatorKey,
             pageIndex: 0,
           ),
           ParticipatorWidget(
@@ -360,14 +364,14 @@ void main() {
 
         _TestingUtils.getParticipatorStateFromKey(tester, fifthParticipatorKey)
             .dynamicRoutesParticipator
-            .popFor(4);
+            .popFor(context, 4);
 
         _TestingUtils.expectPageExistsAtIndex(0);
 
         _TestingUtils.getParticipatorStateFromKey(
           tester,
           firstParticipatorKey,
-        ).dynamicRoutesParticipator.popFor(99999);
+        ).dynamicRoutesParticipator.popFor(context, 99999);
 
         _TestingUtils.expectPageExistsAtIndex(-1);
 
@@ -384,7 +388,7 @@ void main() {
 
         _TestingUtils.getParticipatorStateFromKey(tester, fifthParticipatorKey)
             .dynamicRoutesParticipator
-            .popFor(3);
+            .popFor(context, 3);
 
         _TestingUtils.expectPageExistsAtIndex(1);
       });

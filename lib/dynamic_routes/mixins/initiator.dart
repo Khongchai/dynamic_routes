@@ -24,7 +24,7 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   _InitiatorNavigator(this.initiatorWidget);
 
   @override
-  initializeRoutes(List<Widget> pages,
+  void initializeRoutes(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback}) {
     assert(pages.isNotEmpty, "The participators page array cannot be empty");
 
