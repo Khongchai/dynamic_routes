@@ -33,6 +33,12 @@ abstract class InitiatorNavigator {
 }
 
 abstract class ParticipatorNavigator {
+  /// Returns the index of the current page. The index corresponds to its position
+  /// in the pages array passed to the [initializeRoutes] method of the initiator.
+  ///
+  /// The index starts from 0.
+  int? getCurrentPageIndex();
+
   /// Returns the page widget that belongs to the current route
   int? getCurrentWidgetHash();
 
@@ -52,6 +58,11 @@ abstract class ParticipatorNavigator {
 
   /// Pop for a specified number of pages. Regardless of the provided number,
   /// it will only pop until the initiator page.
+  ///
+  /// If you wanna pop until the navigator page, you can just do
+  /// popFor(double.infinity)
+  /// or
+  /// popFor(dynamicRoutesParticipator.getCurrentPageIndex() + 1).
   void popFor<T>(BuildContext context, int numberOfPagesToPop,
       {required Widget currentPage, T? popResult});
 
@@ -145,6 +156,13 @@ abstract class DynamicRoutesNavigator
 
   bool _isPostLastPage = false;
 
+  /// This is added to provide more info about the current position of the page
+  /// in the participator array.
+  ///
+  /// If you use [Navigator.pop] instead of [dynamicRoutesParticipator.popCurrent],
+  /// this number might not be accurate.
+  int? _currentPageIndex;
+
   Function(BuildContext context)? _lastPageCallback;
 }
 
@@ -152,6 +170,11 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   List<Widget> getLoadedPages() {
     return _pageDataMap.values.map((e) => e.currentPage).toList();
+  }
+
+  @override
+  int? getCurrentPageIndex() {
+    return _currentPageIndex;
   }
 
   @override
@@ -171,6 +194,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     final Map<int, PageDLLData> pageRoutes = {};
 
     _currentPageHash = pages.first.hashCode;
+    _currentPageIndex = 0;
 
     for (int i = 0; i < pages.length; i++) {
       final previousPage = i - 1 < 0 ? null : pages[i - 1];
@@ -192,6 +216,12 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
   @override
   Future<T?> pushNext<T>(BuildContext context, {required Widget currentPage}) {
+    assert(
+        _currentPageIndex != null && _currentPageHash != null,
+        "pushFirst() "
+        "of the dynamicRoutesInitiator instance should be called before calling "
+        "this method on a participator");
+
     final currentPageState = _getCurrentPageDLLData(currentPage);
 
     if (currentPageState.isLastPage()) {
@@ -202,6 +232,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
       return Future.value(null);
     } else {
       _currentPageHash = currentPageState.nextPage.hashCode;
+      _currentPageIndex = _currentPageIndex! + 1;
       return Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => currentPageState.nextPage!));
     }
@@ -222,9 +253,16 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   void popCurrent<T>(BuildContext context,
       {required Widget currentPage, T? popResult}) async {
+    assert(
+        _currentPageIndex != null && _currentPageHash != null,
+        "pushFirst() "
+        "of the dynamicRoutesInitiator instance should be called before calling "
+        "this method on a participator");
+
     final _currentPage = _getCurrentPageDLLData(currentPage);
 
     _currentPageHash = _currentPage.previousPage.hashCode;
+    _currentPageIndex = _currentPageIndex! - 1;
 
     return Navigator.of(context).pop(popResult);
   }

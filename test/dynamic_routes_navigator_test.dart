@@ -314,6 +314,77 @@ void main() {
         expect(foundText, findsOneWidget);
       });
 
+      testWidgets("pageIndex value test", (WidgetTester tester) async {
+        const firstParticipatorKey = Key("fpk");
+        const firstParticipatorNextButtonKey = Key("fnk");
+        const secondParticipatorNextButtonKey = Key("snk");
+        const thirdParticipatorNextButtonKey = Key("tnk");
+        const thirdParticipatorKey = Key("tpk");
+        const fourthParticipatorNextButtonKey = Key("fnk");
+        const fifthParticipatorKey = Key("fipk");
+        const participatorPages = [
+          ParticipatorWidget(
+            pushNextButtonKey: firstParticipatorNextButtonKey,
+            key: firstParticipatorKey,
+            pageIndex: 0,
+          ),
+          ParticipatorWidget(
+            pushNextButtonKey: secondParticipatorNextButtonKey,
+            pageIndex: 1,
+          ),
+          ParticipatorWidget(
+            pushNextButtonKey: thirdParticipatorNextButtonKey,
+            pageIndex: 2,
+            key: thirdParticipatorKey,
+          ),
+          ParticipatorWidget(
+            pushNextButtonKey: fourthParticipatorNextButtonKey,
+            pageIndex: 3,
+          ),
+          ParticipatorWidget(
+            key: fifthParticipatorKey,
+            pageIndex: 4,
+          ),
+        ];
+
+        const initiatorPushFirstKey = Key("pushKey");
+        await tester.pumpWidget(const InitiatorWidget(
+          participatorPages: participatorPages,
+          pushFirstButtonKey: initiatorPushFirstKey,
+        ));
+        await tester.tap(find.byKey(initiatorPushFirstKey));
+        await tester.pumpAndSettle();
+
+        final firstParticipatorState =
+            _TestingUtils.getParticipatorStateFromKey(
+                tester, firstParticipatorKey);
+        expect(
+            firstParticipatorState.dynamicRoutesParticipator
+                .getCurrentPageIndex(),
+            firstParticipatorState.pageIndex);
+
+        await tester.tap(find.byKey(firstParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(secondParticipatorNextButtonKey));
+        await tester.pumpAndSettle();
+        final thirdParticipatorState =
+            _TestingUtils.getParticipatorStateFromKey(
+                tester, thirdParticipatorKey);
+        expect(
+            thirdParticipatorState.dynamicRoutesParticipator
+                .getCurrentPageIndex(),
+            thirdParticipatorState.pageIndex);
+
+        thirdParticipatorState.dynamicRoutesParticipator.popFor(
+            thirdParticipatorState.context,
+            thirdParticipatorState.dynamicRoutesParticipator
+                    .getCurrentPageIndex()! +
+                1);
+        await tester.pumpAndSettle();
+
+        _TestingUtils.expectPageExistsAtIndex(-1);
+      });
+
       testWidgets("popFor behaves correctly.", (WidgetTester tester) async {
         const firstParticipatorKey = Key("fpk");
         const firstParticipatorNextButtonKey = Key("fnk");
@@ -350,7 +421,6 @@ void main() {
           participatorPages: participatorPages,
           pushFirstButtonKey: initiatorPushFirstKey,
         ));
-
         await tester.tap(find.byKey(initiatorPushFirstKey));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(firstParticipatorNextButtonKey));

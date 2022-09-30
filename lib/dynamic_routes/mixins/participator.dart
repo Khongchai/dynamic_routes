@@ -31,6 +31,10 @@ class _ParticipatorNavigator {
     currentWidget = participatorWidget;
   }
 
+  int? getCurrentPageIndex() {
+    return navigator.getCurrentPageIndex();
+  }
+
   int? getCurrentWidgetHash() {
     return navigator.getCurrentWidgetHash();
   }
