@@ -443,8 +443,11 @@ void main() {
         final fifthParticipatorState =
             _TestingUtils.getParticipatorStateFromKey(
                 tester, fifthParticipatorKey);
-        fifthParticipatorState.dynamicRoutesParticipator
-            .popFor(fifthParticipatorState.context, 4);
+        fifthParticipatorState.dynamicRoutesParticipator.popFor(
+            fifthParticipatorState.context,
+            fifthParticipatorState.dynamicRoutesParticipator
+                // test will pass if index is 4.
+                .getCurrentPageIndex());
         await tester.pumpAndSettle();
 
         _TestingUtils.expectPageExistsAtIndex(0);
