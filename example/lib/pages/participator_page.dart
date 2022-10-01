@@ -53,13 +53,12 @@ class _ParticipatorPageState extends State<ParticipatorPage>
         child: TextButton(
           key: Key(widget.title),
           onPressed: () async {
-            await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
+            await dynamicRoutesParticipator.pushNext(context);
             setState(() {});
 
             // This is same as the one above
-            //   await   dynamicRoutesParticipator.pushNext(context);
-            //   setState(() {});
-            //
+            // await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
+            // setState(() {});
           },
           child: const Text("Next Page"),
         ),
