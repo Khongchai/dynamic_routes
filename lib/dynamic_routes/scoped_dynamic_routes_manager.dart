@@ -135,7 +135,6 @@ abstract class ScopedDynamicRoutesManager {
 
   /// Remove reference to all instantiated objects from the_dynamicRoutesInstances
   /// array.
-  ///
   void disposeDynamicRoutesInstance(Widget widget,
       {required bool clearCacheRelatedData});
 }
