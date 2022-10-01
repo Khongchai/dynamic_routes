@@ -328,6 +328,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   void popFor<T>(BuildContext context, int numberOfPagesToPop,
       {required Widget currentPage, T? popResult}) async {
+    if (numberOfPagesToPop == 0) return;
+
     assert(
         _widget != null,
         "pushFirst() "
@@ -354,6 +356,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
         "pushFirst() "
         "of the dynamicRoutesInitiator instance should be called before calling "
         "this method on a participator");
+
+    if (numberOfPagesToPush == 0) return [];
 
     final _currentPage = _getCurrentPageDLLData(currentPage);
 

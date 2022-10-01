@@ -48,6 +48,11 @@ class _ParticipatorNavigator {
     return navigator.pushNext(context, currentPage: currentWidget);
   }
 
+  List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush) {
+    return navigator.pushFor(context, numberOfPagesToPush,
+        currentPage: currentWidget);
+  }
+
   bool pushNextOfLastPageCalled() {
     return navigator.pushNextOfLastPageCalled();
   }

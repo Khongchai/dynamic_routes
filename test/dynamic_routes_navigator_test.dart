@@ -30,11 +30,13 @@ class InitiatorWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<InitiatorWidget> createState() => _InitiatorWidgetState();
+  State<InitiatorWidget> createState() => InitiatorWidgetState();
 }
 
-class _InitiatorWidgetState extends State<InitiatorWidget>
+class InitiatorWidgetState extends State<InitiatorWidget>
     with DynamicRoutesInitiator {
+  bool isLastPageCallbackCalled = false;
+
   @override
   void dispose() {
     dynamicRoutesInitiator.dispose();
@@ -52,8 +54,10 @@ class _InitiatorWidgetState extends State<InitiatorWidget>
             TextButton(
                 key: widget.pushFirstButtonKey,
                 onPressed: () {
-                  dynamicRoutesInitiator
-                      .initializeRoutes(widget.participatorPages);
+                  dynamicRoutesInitiator.initializeRoutes(
+                      widget.participatorPages, lastPageCallback: (_) {
+                    isLastPageCallbackCalled = true;
+                  });
                   dynamicRoutesInitiator.pushFirst(context);
                 },
                 child: const Text("Push First")),
@@ -136,7 +140,7 @@ void main() {
 
       await tester.tap(find.byKey(initiatorPushFirstKey));
 
-      final _InitiatorWidgetState initiatorWidgetState =
+      final InitiatorWidgetState initiatorWidgetState =
           tester.state(find.byType(InitiatorWidget));
 
       expect(
@@ -150,7 +154,7 @@ void main() {
           "throw an assertion error", (WidgetTester tester) async {
         await tester.pumpWidget(const InitiatorWidget(participatorPages: []));
 
-        final _InitiatorWidgetState initiatorWidgetState =
+        final InitiatorWidgetState initiatorWidgetState =
             tester.state(find.byType(InitiatorWidget));
 
         expect(
@@ -167,7 +171,7 @@ void main() {
         const participatorWidget = ParticipatorWidget();
         await tester.pumpWidget(const InitiatorWidget(participatorPages: []));
 
-        final _InitiatorWidgetState initiatorWidgetState =
+        final InitiatorWidgetState initiatorWidgetState =
             tester.state(find.byType(InitiatorWidget));
 
         initiatorWidgetState.dynamicRoutesInitiator
@@ -188,7 +192,7 @@ void main() {
           participatorPages: [],
         ));
 
-        final _InitiatorWidgetState initiatorWidgetState =
+        final InitiatorWidgetState initiatorWidgetState =
             tester.state(find.byType(InitiatorWidget));
 
         initiatorWidgetState.dynamicRoutesInitiator
@@ -205,7 +209,7 @@ void main() {
         "should throw an assertion error", (WidgetTester tester) async {
       await tester.pumpWidget(const InitiatorWidget(participatorPages: []));
 
-      final _InitiatorWidgetState initiatorWidgetState =
+      final InitiatorWidgetState initiatorWidgetState =
           tester.state(find.byType(InitiatorWidget));
 
       initiatorWidgetState.dynamicRoutesInitiator
@@ -226,7 +230,7 @@ void main() {
       await tester.pumpWidget(
           const InitiatorWidget(participatorPages: [ParticipatorWidget()]));
 
-      final _InitiatorWidgetState initiatorWidgetState =
+      final InitiatorWidgetState initiatorWidgetState =
           tester.state(find.byType(InitiatorWidget));
 
       initiatorWidgetState.dynamicRoutesInitiator.dispose();
@@ -359,7 +363,7 @@ void main() {
       TestingUtils.expectPageExistsAtIndex(-1);
 
       await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
-      await tester.pumpWidget(initiator);
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(participators[1].pushNextButtonKey!));
@@ -367,6 +371,7 @@ void main() {
       await tester.tap(find.byKey(participators[2].pushNextButtonKey!));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(participators[3].pushNextButtonKey!));
+      await tester.pumpAndSettle();
 
       final fifthParticipatorState2 = TestingUtils.getParticipatorStateFromKey(
           tester, participators[4].key!);
@@ -377,52 +382,57 @@ void main() {
       TestingUtils.expectPageExistsAtIndex(1);
     });
 
+    testWidgets("pushFor functions correctly", (tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(5);
+      final initiator = TestingUtils.generateInitiatorWidget(participators);
+
+      await tester.pumpWidget(initiator);
+
+      final initiatorState =
+          TestingUtils.getInitiatorWidgetStateFromKey(tester, initiator.key!);
+
+      expect(initiatorState.isLastPageCallbackCalled, false);
+
+      await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
+      await tester.pumpAndSettle();
+
+      final firstPageState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators[0].key!);
+      firstPageState.dynamicRoutesParticipator
+          .pushFor(firstPageState.context, 4);
+      await tester.pumpAndSettle();
+      TestingUtils.expectPageExistsAtIndex(4);
+
+      firstPageState.dynamicRoutesParticipator
+          .popFor(firstPageState.context, 4);
+      TestingUtils.expectPageExistsAtIndex(4);
+
+      firstPageState.dynamicRoutesParticipator
+          .pushFor(firstPageState.context, 5);
+      TestingUtils.expectPageExistsAtIndex(4);
+
+      expect(initiatorState.isLastPageCallbackCalled, true);
+    });
+
     testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
-      const firstParticipatorKey = Key("fpk");
-      const firstParticipatorNextButtonKey = Key("fnk");
-      const secondParticipatorKey = Key("spk");
-      const secondParticipatorNextButtonKey = Key("snk");
-      const thirdParticipatorKey = Key("tpk");
-      const thirdParticipatorNextButtonKey = Key("tnk");
-      const fourthParticipatorKey = Key("tpk");
-      const participatorPages = [
-        ParticipatorWidget(
-          key: firstParticipatorKey,
-          pushNextButtonKey: firstParticipatorNextButtonKey,
-          pageIndex: 0,
-        ),
-        ParticipatorWidget(
-          key: secondParticipatorKey,
-          pushNextButtonKey: secondParticipatorNextButtonKey,
-          pageIndex: 1,
-        ),
-        ParticipatorWidget(
-          key: thirdParticipatorKey,
-          pushNextButtonKey: thirdParticipatorNextButtonKey,
-          pageIndex: 2,
-        ),
-        ParticipatorWidget(key: fourthParticipatorKey, pageIndex: 3),
-      ];
+      final participators = TestingUtils.generateParticipatorWidget(4);
+      final initiator = TestingUtils.generateInitiatorWidget(participators);
 
-      const initiatorPushFirstKey = Key("pushKey");
-      await tester.pumpWidget(const InitiatorWidget(
-        participatorPages: participatorPages,
-        pushFirstButtonKey: initiatorPushFirstKey,
-      ));
+      await tester.pumpWidget(initiator);
 
-      await tester.tap(find.byKey(initiatorPushFirstKey));
+      await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
       await tester.pumpAndSettle();
 
       TestingUtils.expectPageExistsAtIndex(0);
 
-      await tester.tap(find.byKey(firstParticipatorNextButtonKey));
+      await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(secondParticipatorNextButtonKey));
+      await tester.tap(find.byKey(participators[1].pushNextButtonKey!));
       await tester.pumpAndSettle();
 
       TestingUtils.expectPageExistsAtIndex(2);
 
-      await tester.tap(find.byKey(thirdParticipatorNextButtonKey));
+      await tester.tap(find.byKey(participators[2].pushNextButtonKey!));
       await tester.pumpAndSettle();
 
       TestingUtils.expectPageExistsAtIndex(3);
@@ -448,7 +458,7 @@ void main() {
           thirdWidget
         ],
       ));
-      final _InitiatorWidgetState initiatorState =
+      final InitiatorWidgetState initiatorState =
           tester.state(find.byType(InitiatorWidget));
 
       await tester.tap(find.byKey(pushFirstButtonKey));

@@ -11,6 +11,11 @@ class TestingUtils {
     return tester.state(find.byKey(key)) as ParticipatorWidgetState;
   }
 
+  static InitiatorWidgetState getInitiatorWidgetStateFromKey(
+      WidgetTester tester, Key key) {
+    return tester.state(find.byKey(key)) as InitiatorWidgetState;
+  }
+
   /// Index -1 = initiator page.
   /// Index > -1 = participator pages.
   static void expectPageExistsAtIndex(int number) {

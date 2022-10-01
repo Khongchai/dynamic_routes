@@ -52,10 +52,15 @@ class _ParticipatorPageState extends State<ParticipatorPage>
         padding: const EdgeInsets.all(16),
         child: TextButton(
           key: Key(widget.title),
-          onPressed: () =>
-              dynamicRoutesParticipator.pushNext(context).then((_) {
+          onPressed: () async {
+            await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
             setState(() {});
-          }),
+
+            // This is same as the one above
+            //   await   dynamicRoutesParticipator.pushNext(context);
+            //   setState(() {});
+            //
+          },
           child: const Text("Next Page"),
         ),
       ),
