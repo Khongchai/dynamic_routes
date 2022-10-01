@@ -166,22 +166,20 @@ with [popFor].
 [popFor] guarantees that you will never pop beyond the initiator page.
 
 ```dart
-void onSomeButtonPressed() {
-  // Pop just 2 pages while returning true as the result to those two pages.
-  dynamicRoutesNavigator.popFor(context, 2, true);
+// Pop just 2 pages while returning true as the result to those two pages.
+dynamicRoutesNavigator.popFor(context, 2, true);
 
-  // This pops until the first participator page.
-  final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
-  dynamicRoutesNavigator.popFor(context, currentPageIndex);
+// This pops until the first participator page.
+final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
+dynamicRoutesNavigator.popFor(context, currentPageIndex);
 
-  // This pops until the first participator page.
-  final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
-  dynamicRoutesNavigator.popFor(context, currentPageIndex);
+// This pops until the first participator page.
+final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
+dynamicRoutesNavigator.popFor(context, currentPageIndex);
 
-  // Add - 1 to currentPageIndex or just use double.infinity to pop to the initiator page.
-  dynamicRoutesNavigator.popFor(context, currentPageIndex);
-  dynamicRoutesNavigator.popFor(context, double.infinity);
-}
+// Add - 1 to currentPageIndex or just use double.infinity to pop to the initiator page.
+dynamicRoutesNavigator.popFor(context, currentPageIndex);
+dynamicRoutesNavigator.popFor(context, double.infinity);
 ```
 
 ## Caching
