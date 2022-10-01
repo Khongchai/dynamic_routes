@@ -12,7 +12,7 @@ Name change and docs edit
 
 - Added a method to pop for a number of pages between 0 to pages.length.
 - DynamicRoutesNavigator.pop now conforms to the Navigator.pop interface.
-- Added popFor, pushFor, and popRange.
+- Added popFor, pushFor.
 - Can now control the transition animation.
 - Sub-routing now possible.
 
