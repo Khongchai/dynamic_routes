@@ -42,7 +42,12 @@ class _ParticipatorPageState extends State<ParticipatorPage>
           }),
       backgroundColor: widget.backgroundColor,
       body: Align(
-          child: Text(widget.title, style: const TextStyle(fontSize: 30))),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text(widget.title, style: const TextStyle(fontSize: 30)),
+        const SizedBox(height: 16),
+        Text("(index: ${dynamicRoutesParticipator.getCurrentPageIndex()})",
+            style: const TextStyle(fontSize: 16)),
+      ])),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
