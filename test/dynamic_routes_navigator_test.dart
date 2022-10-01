@@ -293,9 +293,11 @@ void main() {
           participatorPages: [
             ParticipatorWidget(
               pushNextButtonKey: participatorPushNextKey,
+              pageIndex: 0,
             ),
             ParticipatorWidget(
               backButtonWithValueKey: participatorBackButtonWithValueKey,
+              pageIndex: 1,
             ),
           ],
           pushFirstButtonKey: initiatorPushFirstKey,
@@ -304,8 +306,12 @@ void main() {
         await tester.tap(find.byKey(initiatorPushFirstKey));
         await tester.pumpAndSettle();
 
+        _TestingUtils.expectPageExistsAtIndex(0);
+
         await tester.tap(find.byKey(participatorPushNextKey));
         await tester.pumpAndSettle();
+
+        _TestingUtils.expectPageExistsAtIndex(1);
 
         await tester.tap(find.byKey(participatorBackButtonWithValueKey));
         await tester.pumpAndSettle();
@@ -378,7 +384,7 @@ void main() {
         thirdParticipatorState.dynamicRoutesParticipator.popFor(
             thirdParticipatorState.context,
             thirdParticipatorState.dynamicRoutesParticipator
-                    .getCurrentPageIndex()! +
+                    .getCurrentPageIndex() +
                 1);
         await tester.pumpAndSettle();
 
