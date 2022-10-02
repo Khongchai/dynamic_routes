@@ -267,32 +267,73 @@ void initiateDynamicRoutesInstane(){
   final customNavigationLogicProvider = CustomNavigationLogicProvider();
 
   // Make sure this is called after initializeRoutes.
-  dynamicRoutesInitiator
-              .setNavigationLogicProvider(customNavigationLogicProvider);
+  dynamicRoutesInitiator.setNavigationLogicProvider(customNavigationLogicProvider);
+
+  dynamicRoutesInitiator.pushFirst(context);
 }
 ```
 
 This second example completely replaces the navigation logic, instead of calling Flutter's _Navigator.of(context).push_, it instead simply replaces the current widget with the new one.
 
+_customNextCallback_ and _customBackCallback_ are just methods that I added to this class so that we can pass it custom implementation
+from else where.
+
 ```dart
 class CustomNavigationLogicProvider implements NavigationLogicProvider {
-  final VoidCallback customNextCallback;
-  final VoidCallback customBackCallback;
+  final Function(Widget) customNextCallback;
+  final Function(Widget?) customBackCallback;
 
   const CustomNavigationLogicProvider(
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(BuildContext _, T __) {
-    customBackCallback();
+  void back<T>(BuildContext _, Widget? previousPage, T __) {
+    customBackCallback(previousPage);
   }
 
   @override
-  Future<T?> next<T>(BuildContext _, Widget __,
-      {VoidCallback? callback}) async {
-    customNextCallback();
+  Future<T?> next<T>(
+    BuildContext _,
+    Widget nextWidget,
+  ) async {
+    customNextCallback(nextWidget);
 
     return null;
   }
 }
+
+// ... somewhere inside your initiator widget
+late final CustomNavigationLogicProvider _customNavigationLogicProvider;
+
+@override
+void initState() {
+  super.initState();
+
+  _customNavigationLogicProvider =
+      
+}
+
+void initiateDynamicRoutesInstane(){
+  dynamicRoutesInitiator.initializeRoutes(_widgets,
+      lastPageCallback: (newContext) {
+    Navigator.popUntil(newContext, (route) => route.isFirst);
+  });
+
+  final customNavigationLogicProvider = CustomNavigationLogicProvider(
+    customNextCallback: (widget) {
+      setState(() {
+        _displayedWidget = widget;
+      });
+    }, customBackCallback: (maybeAWidget) {
+      setState(() {
+        _displayedWidget = maybeAWidget;
+      });
+  });
+
+  // Again, make sure this is called after initializeRoutes.
+  dynamicRoutesInitiator.setNavigationLogicProvider();
+
+  dynamicRoutesInitiator.pushFirst(context);
+}
+
 ```
