@@ -257,6 +257,7 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
   }
 }
 
+// ... somewhere inside your initiator widget
 
 void initiateDynamicRoutesInstane(){
   dynamicRoutesInitiator.initializeRoutes(_widgets,
@@ -304,14 +305,6 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
 
 // ... somewhere inside your initiator widget
 late final CustomNavigationLogicProvider _customNavigationLogicProvider;
-
-@override
-void initState() {
-  super.initState();
-
-  _customNavigationLogicProvider =
-      
-}
 
 void initiateDynamicRoutesInstane(){
   dynamicRoutesInitiator.initializeRoutes(_widgets,
