@@ -17,116 +17,126 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SubRouting Test',
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
       ),
-      // One might argue: "What's new with this? We can already do this using
-      // the normal Navigator class".
-      //
-      // Well, that's right, but what you can't do is that do exactly this, but
-      // deciding which page to be shown
-      //
-      // or which place to be swapped at runtime, all from just one place without
-      // the pages even knowing where they are going,
-      // the only thing they do is pushing the next thing in the array.
-      home: MyHomePage(title: 'Dynamic Routes Test', pageWidgets: [
-        const ParticipatorPage(title: "Page 1"),
-        const ParticipatorPage(title: "Page 2"),
-        // A page that can both continue the flow and branch off into a new flow.
-        // In real applications, you'd of course use route predicates to pop back
-        // to something.
-        //
-        // For simplicity's sake, we'll just do pop multiple times for this example.
-        MixedPage(
-          // This isSubSubFlow has nothing to do with the library, it's just that
-          // I'm too lazy to change the title of subsubflow pages.
-          isSubSubFlow: false,
-          subFlowSet1: const [
-            ParticipatorPage(title: "SubFlow 1 Sub page 1"),
-            ParticipatorPage(title: "SubFlow 1 Sub page 2"),
-            ParticipatorPage(title: "SubFlow 1 Sub page 3"),
-          ],
-          subFlowSet1Callback: (context) {
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          },
-          subFlowSet2: [
-            const ParticipatorPage(title: "SubFlow 1 Sub page 1"),
-            const ParticipatorPage(title: "SubFlow 1 Sub page 2"),
-            const ParticipatorPage(title: "SubFlow 1 Sub page 3"),
-            // A sub flow within sub flow....sub-ception!
-            MixedPage(
-                // This isSubSubFlow has nothing to do with the library, it's
-                // just that I'm too lazy to change the title of subsubflow pages.
-                isSubSubFlow: true,
-                subFlowSet1: const [
-                  ParticipatorPage(title: "SubSubflow 1 Sub Page 1"),
-                  ParticipatorPage(title: "SubSubflow 1 Sub Page 2"),
-                ],
-                subFlowSet1Callback: (context) {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-                subFlowSet2: const [
-                  ParticipatorPage(title: "SubSubflow 2 Sub page 1"),
-                  ParticipatorPage(title: "SubSubflow 2 Sub page 2"),
-                ],
-                subFlowSet2Callback: (context) {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                }),
-            const ParticipatorPage(title: "SubFlow 1 Sub page 5"),
-          ],
-          subFlowSet2Callback: (context) {
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          },
-        ),
-        const ParticipatorPage(title: "Page 4"),
-        const ParticipatorPage(title: "Page 5"),
-        const ParticipatorPage(title: "Page 6"),
-      ]),
+      // Unique keys are needed because my participator pages are so similar
+      // Flutter thinks they are the same widget. In a real app, this won't
+      // be a problem.
+
+      // All the nested-route stuff are still possible here, but because we have
+      // already two sets of widgets. To keep things simple, I have decided to
+      // do just 1-level navigation in this example.
+      home: MyHomePage(
+        title: 'Dynamic Routes Test',
+        widgets1: [
+          ParticipatorPage(title: "Page 1", key: UniqueKey()),
+          ParticipatorPage(title: "Page 2", key: UniqueKey()),
+          ParticipatorPage(title: "Page 3", key: UniqueKey()),
+          ParticipatorPage(title: "Page 4", key: UniqueKey()),
+          ParticipatorPage(title: "Page 5", key: UniqueKey()),
+          ParticipatorPage(title: "Page 6", key: UniqueKey()),
+        ],
+        widgets2: [
+          ParticipatorPage(title: "Page 1", key: UniqueKey()),
+          ParticipatorPage(title: "Page 2", key: UniqueKey()),
+          ParticipatorPage(title: "Page 3", key: UniqueKey()),
+          ParticipatorPage(title: "Page 4", key: UniqueKey()),
+          ParticipatorPage(title: "Page 5", key: UniqueKey()),
+          ParticipatorPage(title: "Page 6", key: UniqueKey()),
+        ],
+      ),
     );
   }
 }
 
 class CustomNavigationLogicProvider implements NavigationLogicProvider {
+  final Function(Widget) customNextCallback;
+  final Function(Widget?) customBackCallback;
+
+  const CustomNavigationLogicProvider(
+      {required this.customNextCallback, required this.customBackCallback});
+
   @override
-  void back<T>(BuildContext _, T __, {VoidCallback? callback}) {
-    callback?.call();
+  void back<T>(BuildContext _, Widget? previousPage, T __) {
+    customBackCallback(previousPage);
   }
 
   @override
-  Future<T?> next<T>(BuildContext _, Widget __,
-      {VoidCallback? callback}) async {
-    callback?.call();
+  Future<T?> next<T>(
+    BuildContext _,
+    Widget nextWidget,
+  ) async {
+    customNextCallback(nextWidget);
 
     return null;
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  final List<Widget> pageWidgets;
+  final List<Widget> widgets1;
+  final List<Widget> widgets2;
+  final String title;
 
   const MyHomePage({
     Key? key,
     required this.title,
-    required this.pageWidgets,
+    required this.widgets1,
+    required this.widgets2,
   }) : super(key: key);
-
-  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: Column(
+            children: [
+              Expanded(
+                  child: WidgetWithNavigator(
+                      title: "Top Widget", pageWidgets: widget.widgets1)),
+              const Divider(color: Colors.grey),
+              Expanded(
+                child: WidgetWithNavigator(
+                    title: "Bottom Widget", pageWidgets: widget.widgets2),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class WidgetWithNavigator extends StatefulWidget {
+  final List<Widget> pageWidgets;
+  final String title;
+
+  const WidgetWithNavigator({
+    Key? key,
+    required this.title,
+    required this.pageWidgets,
+  }) : super(key: key);
+
+  @override
+  State<WidgetWithNavigator> createState() => _WidgetWithNavigatorState();
+}
+
+class _WidgetWithNavigatorState extends State<WidgetWithNavigator>
+    with DynamicRoutesInitiator {
   late List<Widget> _widgets = widget.pageWidgets;
+  Widget? _displayedWidget;
+
+  late final CustomNavigationLogicProvider _customNavigationLogicProvider;
 
   @override
   void dispose() {
@@ -139,53 +149,65 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
   void initState() {
     super.initState();
 
-    dynamicRoutesInitiator
-        .setNavigationLogicProvider(CustomNavigationLogicProvider());
+    _customNavigationLogicProvider =
+        CustomNavigationLogicProvider(customNextCallback: (widget) {
+      setState(() {
+        _displayedWidget = widget;
+      });
+    }, customBackCallback: (maybeAWidget) {
+      setState(() {
+        _displayedWidget = maybeAWidget;
+      });
+    });
+
     dynamicRoutesInitiator.setCache(0);
   }
 
   @override
   Widget build(BuildContext context) {
     final value = dynamicRoutesInitiator.getCache();
-    return Scaffold(
-      floatingActionButton: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ElevatedButton(
-            child: const Text("Shuffle page order"),
-            onPressed: () {
-              final newWidgets = [..._widgets]..shuffle();
-              _widgets = newWidgets;
-            },
-          ),
-          ElevatedButton(
-              onPressed: () =>
-                  setState(() => dynamicRoutesInitiator.setCache(value + 1)),
-              child: Text("Increment cached value: $value")),
-        ],
-      ),
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: const Center(child: Text("Dynamic Routes test")),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
-        child: TextButton(
-          child: const Text("Enter flow"),
-          onPressed: () {
-            dynamicRoutesInitiator.initializeRoutes(_widgets,
-                lastPageCallback: (newContext) {
-              Navigator.popUntil(newContext, (route) => route.isFirst);
-            });
 
-            dynamicRoutesInitiator.pushFirst(context).then((_) {
-              // Call setState to refresh the displayed cached value.
-              setState(() {});
-            });
-          },
-        ),
-      ),
-    );
+    return _displayedWidget ??
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                child: const Text("Shuffle page order"),
+                onPressed: () {
+                  final newWidgets = [..._widgets]..shuffle();
+                  _widgets = newWidgets;
+                },
+              ),
+              ElevatedButton(
+                  onPressed: () => setState(
+                      () => dynamicRoutesInitiator.setCache(value + 1)),
+                  child: Text("Increment cached value: $value")),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextButton(
+                  child: const Text("Enter flow"),
+                  onPressed: () {
+                    dynamicRoutesInitiator.initializeRoutes(_widgets,
+                        lastPageCallback: (newContext) {
+                      setState(() {
+                        _displayedWidget = null;
+                      });
+                    });
+                    dynamicRoutesInitiator.setNavigationLogicProvider(
+                        _customNavigationLogicProvider);
+
+                    dynamicRoutesInitiator.pushFirst(context).then((_) {
+                      // Call setState to refresh the displayed cached value.
+                      setState(() {});
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
   }
 }

@@ -221,7 +221,7 @@ abstract class DynamicRoutesNavigator
 
 class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   DynamicRoutesNavigatorImpl() {
-    _navigationLogicProvider = NavigationLogicProviderImpl();
+    _navigationLogicProvider = const NavigationLogicProviderImpl();
   }
 
   @override
@@ -300,8 +300,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     } else {
       _widget = currentPageState.nextPage!.widget;
 
-      return _navigationLogicProvider.next(
-          context, currentPageState.nextPage!.widget);
+      return _navigationLogicProvider.next(context, _widget!);
     }
   }
 
@@ -332,7 +331,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     // popping this should destroy the whole navigation state.
     _widget = pageData.previousPage?.widget;
 
-    return _navigationLogicProvider.back(context, popResult);
+    return _navigationLogicProvider.back(context, _widget, popResult);
   }
 
   @override
@@ -412,6 +411,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   @override
   void setNavigationLogicProvider(
       NavigationLogicProvider navigationLogicProvider) {
-    // TODO: implement setNavigationLogicProvider
+    _navigationLogicProvider = navigationLogicProvider;
   }
 }

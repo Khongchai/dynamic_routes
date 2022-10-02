@@ -231,3 +231,68 @@ void initState() {
 
 If your concern is the separation of concerns, then this caching is probably not for you and you're
 better off using some dependency injection libraries for your cache.
+
+## Modifying, extending, or replacing the navigation logic.
+
+It is possible to partly, or completely supplant or modify the navigation logic. If you want, for example, to do something everytime pushNext or pop is called, you can implement the NavigationLogicProvider class or its implementation, and provide yours as the new navigationLogicProvider.
+
+This first example now logs to firebase everytime a navigation occurs, both next and back.
+
+```dart
+class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
+  const CustomNavigationLogicProvider();
+
+  @override
+  void back<T>(BuildContext context, T result) {
+    logsToFireBase("back");
+
+    super.back(context, result);
+  }
+
+  @override
+  Future<T?> next<T>(BuildContext context, Widget nextPage) async {
+    logsToFireBase("forward");
+
+    return super.next(context, nextPage);
+  }
+}
+
+
+void initiateDynamicRoutesInstane(){
+  dynamicRoutesInitiator.initializeRoutes(_widgets,
+      lastPageCallback: (newContext) {
+    Navigator.popUntil(newContext, (route) => route.isFirst);
+  });
+
+  final customNavigationLogicProvider = CustomNavigationLogicProvider();
+
+  // Make sure this is called after initializeRoutes.
+  dynamicRoutesInitiator
+              .setNavigationLogicProvider(customNavigationLogicProvider);
+}
+```
+
+This second example completely replaces the navigation logic, instead of calling Flutter's _Navigator.of(context).push_, it instead simply replaces the current widget with the new one.
+
+```dart
+class CustomNavigationLogicProvider implements NavigationLogicProvider {
+  final VoidCallback customNextCallback;
+  final VoidCallback customBackCallback;
+
+  const CustomNavigationLogicProvider(
+      {required this.customNextCallback, required this.customBackCallback});
+
+  @override
+  void back<T>(BuildContext _, T __) {
+    customBackCallback();
+  }
+
+  @override
+  Future<T?> next<T>(BuildContext _, Widget __,
+      {VoidCallback? callback}) async {
+    customNextCallback();
+
+    return null;
+  }
+}
+```

@@ -477,4 +477,6 @@ void main() {
       expect(stateToTest.dynamicRoutesParticipator.getCache(), mockCacheData);
     });
   });
+
+  group("Custom navigation logic implementation test", () {});
 }

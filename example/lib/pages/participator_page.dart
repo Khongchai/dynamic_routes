@@ -19,6 +19,8 @@ class ParticipatorPage extends StatefulWidget {
 
 class _ParticipatorPageState extends State<ParticipatorPage>
     with DynamicRoutesParticipator {
+  late final _index = dynamicRoutesParticipator.getCurrentPageIndex();
+
   @override
   Widget build(BuildContext context) {
     final value = dynamicRoutesParticipator.getCache();
@@ -45,22 +47,32 @@ class _ParticipatorPageState extends State<ParticipatorPage>
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text(widget.title, style: const TextStyle(fontSize: 30)),
         const SizedBox(height: 16),
-        Text("(index: ${dynamicRoutesParticipator.getCurrentPageIndex()})",
-            style: const TextStyle(fontSize: 16)),
+        Text("(index: $_index)", style: const TextStyle(fontSize: 16)),
       ])),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
-        child: TextButton(
-          key: Key(widget.title),
-          onPressed: () async {
-            await dynamicRoutesParticipator.pushNext(context);
-            setState(() {});
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () async {
+                dynamicRoutesParticipator.popCurrent(context);
+              },
+              child: const Text("Previous Page"),
+            ),
+            TextButton(
+              key: Key(widget.title),
+              onPressed: () async {
+                await dynamicRoutesParticipator.pushNext(context);
+                setState(() {});
 
-            // This is same as the one above
-            // await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
-            // setState(() {});
-          },
-          child: const Text("Next Page"),
+                // This is same as the one above
+                // await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
+                // setState(() {});
+              },
+              child: const Text("Next Page"),
+            ),
+          ],
         ),
       ),
     );
