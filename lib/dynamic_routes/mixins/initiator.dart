@@ -1,3 +1,4 @@
+import 'package:dynamic_routes/dynamic_routes/navigation_logic_provider.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../base_navigators.dart';
@@ -67,5 +68,13 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   void setCache(dynamic cacheData) {
     _scopedDynamicRoutesManager.setCacheOfThisScope(initiatorWidget, cacheData,
         isInitiator: true);
+  }
+
+  @override
+  void setNavigationLogicProvider(
+      NavigationLogicProvider navigationLogicProvider) {
+    final instance = _scopedDynamicRoutesManager
+        .dispenseParticipatorFromInitiator(initiatorWidget);
+    instance.setNavigationLogicProvider(navigationLogicProvider);
   }
 }

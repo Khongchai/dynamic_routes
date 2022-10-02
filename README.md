@@ -157,13 +157,15 @@ Widget buildButtons() {
 
 ## popFor and pushFor
 
-### popFor
+### pushFor
 
 TODO
 
+### popFor
+
 You can reset the flow, eg. go back to the first participator page, or the initiator page
-with [popFor].
-[popFor] guarantees that you will never pop beyond the initiator page.
+with _popFor_.
+_popFor_ guarantees that you will never pop beyond the initiator page.
 
 ```dart
 // Pop just 2 pages while returning true as the result to those two pages.

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dynamic_routes/dynamic_routes/navigation_logic_provider.dart';
 import 'package:dynamic_routes/dynamic_routes/page_dll_data.dart';
 import 'package:flutter/material.dart';
 
@@ -30,6 +31,9 @@ abstract class InitiatorNavigator {
   Future<T?> pushFirst<T>(BuildContext context);
 
   List<Widget> getLoadedPages();
+
+  void setNavigationLogicProvider(
+      NavigationLogicProvider navigationLogicProvider);
 }
 
 abstract class ParticipatorNavigator {
@@ -211,9 +215,15 @@ abstract class DynamicRoutesNavigator
   bool _isPostLastPage = false;
 
   Function(BuildContext context)? _lastPageCallback;
+
+  late NavigationLogicProvider _navigationLogicProvider;
 }
 
 class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
+  DynamicRoutesNavigatorImpl() {
+    _navigationLogicProvider = NavigationLogicProviderImpl();
+  }
+
   @override
   List<Widget> getLoadedPages() {
     return _pageDataMap.values.map((e) => e.widget).toList();
@@ -290,8 +300,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     } else {
       _widget = currentPageState.nextPage!.widget;
 
-      return Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => currentPageState.nextPage!.widget));
+      return _navigationLogicProvider.next(
+          context, currentPageState.nextPage!.widget);
     }
   }
 
@@ -303,8 +313,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
         "be used.");
 
     final firstPage = _pageDataMap.values.first;
-    return Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => firstPage.widget));
+
+    return _navigationLogicProvider.next(context, firstPage.widget);
   }
 
   @override
@@ -322,7 +332,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     // popping this should destroy the whole navigation state.
     _widget = pageData.previousPage?.widget;
 
-    return Navigator.of(context).pop(popResult);
+    return _navigationLogicProvider.back(context, popResult);
   }
 
   @override
@@ -397,5 +407,11 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
         "dynamic navigation");
 
     return _currentPage!;
+  }
+
+  @override
+  void setNavigationLogicProvider(
+      NavigationLogicProvider navigationLogicProvider) {
+    // TODO: implement setNavigationLogicProvider
   }
 }
