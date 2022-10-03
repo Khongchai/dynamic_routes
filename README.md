@@ -236,50 +236,15 @@ better off using some dependency injection libraries for your cache.
 
 It is possible to partly, or completely supplant or modify the navigation logic. If you want, for example, to do something everytime pushNext or pop is called, you can implement the NavigationLogicProvider class or its implementation, and provide yours as the new navigationLogicProvider.
 
-This first example now logs to firebase everytime a navigation occurs, both next and back.
+In the first example, we replaces the navigation logic completely. 
 
-```dart
-class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
-  const CustomNavigationLogicProvider();
-
-  @override
-  void back<T>(BuildContext context, T result) {
-    logsToFireBase("back");
-
-    super.back(context, result);
-  }
-
-  @override
-  Future<T?> next<T>(BuildContext context, Widget nextPage) async {
-    logsToFireBase("forward");
-
-    return super.next(context, nextPage);
-  }
-}
-
-// ... somewhere inside your initiator widget
-
-void initiateDynamicRoutesInstane(){
-  dynamicRoutesInitiator.initializeRoutes(_widgets,
-      lastPageCallback: (newContext) {
-    Navigator.popUntil(newContext, (route) => route.isFirst);
-  });
-
-  final customNavigationLogicProvider = CustomNavigationLogicProvider();
-
-  // Make sure this is called after initializeRoutes.
-  dynamicRoutesInitiator.setNavigationLogicProvider(customNavigationLogicProvider);
-
-  dynamicRoutesInitiator.pushFirst(context);
-}
-```
-
-This second example completely replaces the navigation logic, instead of calling Flutter's _Navigator.of(context).push_, it instead simply replaces the current widget with the new one.
+Instead of calling Flutter's _Navigator.of(context).push_, we just swap out the current widget with a new one.
 
 _customNextCallback_ and _customBackCallback_ are just methods that I added to this class so that we can pass it custom implementation
-from else where.
+from elsewhere.
 
 ```dart
+// Create a new class that extends NavigationLogicProvider.
 class CustomNavigationLogicProvider implements NavigationLogicProvider {
   final Function(Widget) customNextCallback;
   final Function(Widget?) customBackCallback;
@@ -307,6 +272,7 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
 late final CustomNavigationLogicProvider _customNavigationLogicProvider;
 
 void initiateDynamicRoutesInstane(){
+  // Initialize normally
   dynamicRoutesInitiator.initializeRoutes(_widgets,
       lastPageCallback: (newContext) {
     Navigator.popUntil(newContext, (route) => route.isFirst);
@@ -329,4 +295,46 @@ void initiateDynamicRoutesInstane(){
   dynamicRoutesInitiator.pushFirst(context);
 }
 
+```
+
+In this second example, we extend the already exsiting implementation and log to firebase everytime a navigation occurs.
+
+```dart
+// Create a new class that extends the implementation of NavigationLogicProvider
+class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
+  const CustomNavigationLogicProvider();
+
+  @override
+  Future<T?> next<T>(BuildContext context, Widget nextPage) async {
+    // Add the extra functionality(-ies) that we want
+    logsToFireBase("forward");
+
+    return super.next(context, nextPage);
+  }
+
+  @override
+  void back<T>(BuildContext context, T result) {
+    // Add the extra functionality(-ies) that we want
+    logsToFireBase("back");
+
+    super.back(context, result);
+  }
+}
+
+// ... somewhere inside your initiator widget
+
+void initiateDynamicRoutesInstane(){
+  // Initialize normally
+  dynamicRoutesInitiator.initializeRoutes(_widgets,
+      lastPageCallback: (newContext) {
+    Navigator.popUntil(newContext, (route) => route.isFirst);
+  });
+
+  final customNavigationLogicProvider = CustomNavigationLogicProvider();
+
+  // Make sure this is called after initializeRoutes.
+  dynamicRoutesInitiator.setNavigationLogicProvider(customNavigationLogicProvider);
+
+  dynamicRoutesInitiator.pushFirst(context);
+}
 ```
