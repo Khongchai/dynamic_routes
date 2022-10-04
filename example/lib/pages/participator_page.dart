@@ -67,7 +67,7 @@ class _ParticipatorPageState extends State<ParticipatorPage>
                 setState(() {});
 
                 // This is same as the one above
-                // await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
+                // final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 1));
                 // setState(() {});
               },
               child: const Text("Next Page"),

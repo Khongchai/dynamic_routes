@@ -16,7 +16,7 @@ This library comprises two main parts, the _Initiator_, and the _Participator_.
 
 We can begin by marking the participating page with the _DynamicRoutesParticipator_ mixin. This
 would give that component access to the dynamicRoutesParticipator instance that is tied to the scope
-of the initiator page that we'll mark with the _DynamicRoutesInitiator_.
+of the Initiator page that we'll mark with the _DynamicRoutesInitiator_.
 
 For the page directly before the flow:
 
@@ -61,7 +61,7 @@ class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesParticipator 
 ```
 
 We can dispose the _DynamicRoutesInitiator_ instance along with the page itself by calling the
-initiator's _dispose_ method in the state's _dispose_ method. This will also dispose all
+Initiator's _dispose_ method in the state's _dispose_ method. This will also dispose all
 _DynamicRoutesParticipator_ instances.
 
 ```dart
@@ -78,10 +78,10 @@ void dispose() {
 ## Nested Navigation
 
 You can also have a sort of sub-routing navigation, where for example, the second member in the
-initiator array is itself, also an initiator, and can branch off into its dynamic routing
+Initiator array is itself, also an Initiator, and can branch off into its dynamic routing
 navigation.
 
-To do this, we simply mark the state of the second page with both the participator and the initiator
+To do this, we simply mark the state of the second page with both the Participator and the Initiator
 mixins.
 
 ```dart
@@ -91,7 +91,7 @@ class _MixedPageState extends State<MixedPage>
 }
 ```
 
-And then we can use either the initiator or the participator instances when appropriate.
+And then we can use either the Initiator or the Participator instances when appropriate.
 
 ```dart
 Widget buildButtons() {
@@ -159,13 +159,27 @@ Widget buildButtons() {
 
 ### pushFor
 
-TODO
+You can pop until the last Participator page, or until lastPageCallback with _pushFor_.
+
+This method guarantees that you will never push beyond the last Participator page. 
+
+The method returns a list of future of results from each of the page, so you can await all of them 
+like so:
+
+```dart
+//TODO this needs to be tested.
+final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 4));
+
+
+```
+
 
 ### popFor
 
-You can reset the flow, eg. go back to the first participator page, or the initiator page
+You can reset the flow, eg. go back to the first Participator page, or the Initiator page
 with _popFor_.
-_popFor_ guarantees that you will never pop beyond the initiator page.
+
+_popFor_ guarantees that you will never pop beyond the Initiator page.
 
 ```dart
 // Pop just 2 pages while returning true as the result to those two pages.
@@ -179,7 +193,7 @@ dynamicRoutesNavigator.popFor(context, currentPageIndex);
 final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
 dynamicRoutesNavigator.popFor(context, currentPageIndex);
 
-// Add - 1 to currentPageIndex or just use double.infinity to pop to the initiator page.
+// Add - 1 to currentPageIndex or just use double.infinity to pop to the Initiator page.
 dynamicRoutesNavigator.popFor(context, currentPageIndex);
 dynamicRoutesNavigator.popFor(context, double.infinity);
 ```
@@ -188,7 +202,7 @@ dynamicRoutesNavigator.popFor(context, double.infinity);
 
 This library also supports a simple caching method.
 
-You can call this whenever, and wherever, from both the participators and initiator pages.
+You can call this whenever, and wherever, from both the Participators and Initiator pages.
 
 ```dart
 void saveToCache(WhatEverClassThisThingIs someData) {
@@ -216,7 +230,7 @@ Whatever readFromCache() {
 
 ```
 
-By default, cache data gets cleared alongside the instance of the initiator page, this can be
+By default, cache data gets cleared alongside the instance of the Initiator page, this can be
 overridden directly from the _dispose_ method.
 
 ```dart
@@ -270,7 +284,7 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
   }
 }
 
-// ... somewhere inside your initiator widget
+// ... somewhere inside your Initiator widget
 late final CustomNavigationLogicProvider _customNavigationLogicProvider;
 
 void initiateDynamicRoutesInstane(){
@@ -323,7 +337,7 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
   }
 }
 
-// ... somewhere inside your initiator widget
+// ... somewhere inside your Initiator widget
 
 void initiateDynamicRoutesInstane(){
   // Initialize normally
