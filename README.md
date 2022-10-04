@@ -155,7 +155,7 @@ Widget buildButtons() {
 }
 ```
 
-## popFor and pushFor
+## Navigate Through Multiple Pages
 
 ### pushFor
 
@@ -236,7 +236,9 @@ better off using some dependency injection libraries for your cache.
 
 It is possible to partly, or completely supplant or modify the navigation logic. If you want, for example, to do something everytime pushNext or pop is called, you can implement the NavigationLogicProvider class or its implementation, and provide yours as the new navigationLogicProvider.
 
-In the first example, we replaces the navigation logic completely. 
+_Note that setNavigationLogicProvider only exposes the part of the library that deals with the navigation after TODO_
+
+### In the first example, we replaces the navigation logic completely. 
 
 Instead of calling Flutter's _Navigator.of(context).push_, we just swap out the current widget with a new one.
 
@@ -279,11 +281,11 @@ void initiateDynamicRoutesInstane(){
   });
 
   final customNavigationLogicProvider = CustomNavigationLogicProvider(
-    customNextCallback: (widget) {
+    customNextCallback: (Widget widget) {
       setState(() {
         _displayedWidget = widget;
       });
-    }, customBackCallback: (maybeAWidget) {
+    }, customBackCallback: (Widget? maybeAWidget) {
       setState(() {
         _displayedWidget = maybeAWidget;
       });
@@ -297,7 +299,7 @@ void initiateDynamicRoutesInstane(){
 
 ```
 
-In this second example, we extend the already exsiting implementation and log to firebase everytime a navigation occurs.
+### In this second example, we extend the already exsiting implementation and log to firebase everytime a navigation occurs.
 
 ```dart
 // Create a new class that extends the implementation of NavigationLogicProvider
