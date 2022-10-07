@@ -414,6 +414,52 @@ void main() {
       expect(initiatorState.isLastPageCallbackCalled, true);
     });
 
+    testWidgets(
+        "List of futures from pushFor completes when the pages that "
+        "return them are popped", (tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(4);
+      final initiator = TestingUtils.generateInitiatorWidget(participators);
+
+      await tester.pumpWidget(initiator);
+
+      await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
+      await tester.pumpAndSettle();
+
+      // Participators pushed
+      final firstPageState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators.first.key!);
+      final List<Future> futures = firstPageState.dynamicRoutesParticipator
+          .pushFor(firstPageState.context, participators.length - 1);
+
+      expect(futures.length, 3);
+
+      await tester.pumpAndSettle();
+
+      final lastPageState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators.last.key!);
+      lastPageState.dynamicRoutesParticipator
+          .popCurrent(lastPageState.context, 4);
+      await tester.pumpAndSettle();
+
+      final secondToLastPageState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators[participators.length - 2].key!);
+      secondToLastPageState.dynamicRoutesParticipator
+          .popCurrent(secondToLastPageState.context, 3);
+      await tester.pumpAndSettle();
+
+      final secondPageState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators[participators.length - 3].key!);
+      secondPageState.dynamicRoutesParticipator
+          .popCurrent(secondPageState.context, 2);
+      await tester.pumpAndSettle();
+
+      final List<dynamic> values = await Future.wait(futures);
+      // [2, 3, 4] in this exact order because, according to the docs, the
+      // returned values from Future.wait is "a list of all the values that were
+      // produced in the order that the futures are provided by iterating futures.
+      expect(values, [2, 3, 4]);
+    });
+
     testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
       final participators = TestingUtils.generateParticipatorWidget(4);
       final initiator = TestingUtils.generateInitiatorWidget(participators);
