@@ -16,15 +16,20 @@ class MockBuildContext extends Mock implements BuildContext {}
 class InitiatorWidget extends StatefulWidget {
   final Key? pushFirstButtonKey;
   final Key? backButtonKey;
+  final Key? pushFirstWithForKey;
 
   /// Provide this if you wanna test the widget by tapping on the page's button.
   ///
   /// If testing the state, just give empty array.
   final List<Widget> participatorPages;
 
+  final int pushForCount;
+
   const InitiatorWidget({
     this.pushFirstButtonKey,
     this.backButtonKey,
+    this.pushFirstWithForKey,
+    this.pushForCount = 0,
     Key? key,
     required this.participatorPages,
   }) : super(key: key);
@@ -36,6 +41,9 @@ class InitiatorWidget extends StatefulWidget {
 class InitiatorWidgetState extends State<InitiatorWidget>
     with DynamicRoutesInitiator {
   bool isLastPageCallbackCalled = false;
+
+  late int pushForCount = widget.pushForCount;
+  List<Future> pushFirstThenForFutures = [];
 
   @override
   void dispose() {
@@ -59,6 +67,17 @@ class InitiatorWidgetState extends State<InitiatorWidget>
                     isLastPageCallbackCalled = true;
                   });
                   dynamicRoutesInitiator.pushFirst(context);
+                },
+                child: const Text("Push First")),
+            TextButton(
+                key: widget.pushFirstWithForKey,
+                onPressed: () {
+                  dynamicRoutesInitiator.initializeRoutes(
+                      widget.participatorPages, lastPageCallback: (_) {
+                    isLastPageCallbackCalled = true;
+                  });
+                  pushFirstThenForFutures = dynamicRoutesInitiator
+                      .pushFirstThenFor(context, pushForCount);
                 },
                 child: const Text("Push First")),
             TextButton(
@@ -260,6 +279,30 @@ void main() {
       await tester.pumpAndSettle();
     });
 
+    testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(4);
+      final initiator = TestingUtils.generateInitiatorWidget(participators);
+
+      await tester.pumpWidget(initiator);
+
+      await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
+      await tester.pumpAndSettle();
+
+      TestingUtils.expectPageExistsAtIndex(0);
+
+      await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(participators[1].pushNextButtonKey!));
+      await tester.pumpAndSettle();
+
+      TestingUtils.expectPageExistsAtIndex(2);
+
+      await tester.tap(find.byKey(participators[2].pushNextButtonKey!));
+      await tester.pumpAndSettle();
+
+      TestingUtils.expectPageExistsAtIndex(3);
+    });
+
     testWidgets(
         "Popping with value using dynamicRoutesNavigator should work like Navigator.pop",
         (WidgetTester tester) async {
@@ -398,8 +441,10 @@ void main() {
 
       final firstPageState = TestingUtils.getParticipatorStateFromKey(
           tester, participators[0].key!);
-      firstPageState.dynamicRoutesParticipator
-          .pushFor(firstPageState.context, 4);
+      firstPageState.dynamicRoutesParticipator.pushFor(
+          firstPageState.context,
+          firstPageState.dynamicRoutesParticipator
+              .getProgressFromCurrentPage());
       await tester.pumpAndSettle();
       TestingUtils.expectPageExistsAtIndex(4);
 
@@ -460,28 +505,66 @@ void main() {
       expect(values, [2, 3, 4]);
     });
 
-    testWidgets("Routes get pushed correctly ", (WidgetTester tester) async {
-      final participators = TestingUtils.generateParticipatorWidget(4);
-      final initiator = TestingUtils.generateInitiatorWidget(participators);
+    testWidgets("pushFirstThenFor behaves correctly", (tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(5);
+      final initiator =
+          TestingUtils.generateInitiatorWidget(participators, pushForCount: 4);
 
       await tester.pumpWidget(initiator);
 
-      await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
+      final initiatorState =
+          TestingUtils.getInitiatorWidgetStateFromKey(tester, initiator.key!);
+
+      expect(initiatorState.isLastPageCallbackCalled, false);
+
+      await tester.tap(find.byKey(initiator.pushFirstWithForKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectPageExistsAtIndex(4);
 
-      await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(participators[1].pushNextButtonKey!));
-      await tester.pumpAndSettle();
-
-      TestingUtils.expectPageExistsAtIndex(2);
-
-      await tester.tap(find.byKey(participators[2].pushNextButtonKey!));
+      final lastPageState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators.last.key!);
+      lastPageState.dynamicRoutesParticipator.popFor(lastPageState.context,
+          lastPageState.dynamicRoutesParticipator.getCurrentPageIndex() + 1);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(3);
+      TestingUtils.expectPageExistsAtIndex(-1);
+
+      initiatorState.pushForCount = 9999999;
+      await tester.tap(find.byKey(initiator.pushFirstWithForKey!));
+      await tester.pumpAndSettle();
+
+      TestingUtils.expectPageExistsAtIndex(4);
+      expect(initiatorState.isLastPageCallbackCalled, true);
+    });
+
+    testWidgets(
+        "pushFirstThenFor contains all participators values, including"
+        "the first one.", (tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(5);
+      final initiator =
+          TestingUtils.generateInitiatorWidget(participators, pushForCount: 4);
+
+      await tester.pumpWidget(initiator);
+
+      await tester.tap(find.byKey(initiator.pushFirstWithForKey!));
+      await tester.pumpAndSettle();
+
+      final initiatorPageState =
+          TestingUtils.getInitiatorWidgetStateFromKey(tester, initiator.key!);
+      final List<Future> futures = initiatorPageState.pushFirstThenForFutures;
+
+      expect(futures.length, 5);
+
+      for (int i = participators.length - 1; i >= 0; i--) {
+        final pageState = TestingUtils.getParticipatorStateFromKey(
+            tester, participators[i].key!);
+        pageState.dynamicRoutesParticipator.popCurrent(pageState.context, i);
+        await tester.pumpAndSettle();
+      }
+
+      final List<dynamic> values = await Future.wait(futures);
+      expect(values, [0, 1, 2, 3, 4]);
     });
   });
 
