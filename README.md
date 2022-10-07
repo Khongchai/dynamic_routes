@@ -159,7 +159,7 @@ Widget buildButtons() {
 
 ### pushFor
 
-You can pop until the last Participator page, or until lastPageCallback with _pushFor_.
+You can push until the last Participator page, or until lastPageCallback with _pushFor_.
 
 This method guarantees that you will never push beyond the last Participator page. 
 
