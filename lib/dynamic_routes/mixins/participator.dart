@@ -35,6 +35,10 @@ class _ParticipatorNavigator {
     return navigator.getCurrentPageIndex(currentWidget);
   }
 
+  int getProgressFromCurrentPage() {
+    return navigator.getProgressFromCurrentPage(currentWidget);
+  }
+
   int? getCurrentWidgetHash() {
     return navigator.getCurrentWidgetHash();
   }
