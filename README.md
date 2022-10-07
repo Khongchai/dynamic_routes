@@ -155,7 +155,7 @@ Widget buildButtons() {
 }
 ```
 
-## Navigate Through Multiple Pages
+## Multi-page Navigation
 
 ### pushFor
 
@@ -163,16 +163,37 @@ You can pop until the last Participator page, or until lastPageCallback with _pu
 
 This method guarantees that you will never push beyond the last Participator page. 
 
-The method returns a list of future of results from each of the page, so you can await all of them 
+```dart
+// Pushes for 4 times.
+dynamicRoutesParticipator.pushFor(context, 4);
+
+dynamicRoutesParticipator.pushFor();
+```
+
+The method returns a list of Future of results from each of the page; you can await all of them 
 like so:
 
 ```dart
-//TODO this needs to be tested.
-final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 4));
+// Assume that we are in the first participator page.
+final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 3));
 
-
+print(results); // [resultFromSecond, resultFromThird, resultFromFourth];
 ```
 
+The method is only available to the Participators instances. To use pushFor from an Initiator, use
+_pushFirstThenFor_.
+
+### pushFirstThenFor
+
+This is similar to _pushFor_, but is called from the initiator. Internally, we just call _pushFirst_ first, then call _pushFor_. All methods of awaiting the results mentioned above apply here as well.
+
+```dart
+dynamicRoutesInitiator.initializeRoutes(...);
+// This will push the first page, then push 3 more pages. We are basically pushing a total of 4 pages.
+final results = await Future.wait(dynamicRoutesInitiator.pushFirstThenFor(context, 3));
+
+print(results)  //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
+```
 
 ### popFor
 
@@ -189,14 +210,11 @@ dynamicRoutesNavigator.popFor(context, 2, true);
 final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
 dynamicRoutesNavigator.popFor(context, currentPageIndex);
 
-// This pops until the first participator page.
-final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
-dynamicRoutesNavigator.popFor(context, currentPageIndex);
-
-// Add - 1 to currentPageIndex or just use double.infinity to pop to the Initiator page.
+// Add + 1 to currentPageIndex or just use double.infinity to pop to the Initiator page.
 dynamicRoutesNavigator.popFor(context, currentPageIndex);
 dynamicRoutesNavigator.popFor(context, double.infinity);
 ```
+
 
 ## Caching
 
