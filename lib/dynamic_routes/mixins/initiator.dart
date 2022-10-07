@@ -19,6 +19,8 @@ mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
 class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
 
+  DynamicRoutesNavigator? _initiatorInstance;
+
   @visibleForTesting
   final Widget initiatorWidget;
 
@@ -32,26 +34,28 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
     // //Ensure clean up of the old one, but not the cache.
     dispose(clearCache: false);
 
-    final newInstance =
+    _initiatorInstance =
         _scopedDynamicRoutesManager.dispenseNewDynamicRoutesInstance(
             participatorWidgets: pages, initiatorWidget: initiatorWidget);
 
-    newInstance.initializeRoutes(pages, lastPageCallback: lastPageCallback);
+    _initiatorInstance!
+        .initializeRoutes(pages, lastPageCallback: lastPageCallback);
   }
 
   @override
   Future<T?> pushFirst<T>(BuildContext context) {
-    final instance = _scopedDynamicRoutesManager
-        .dispenseParticipatorFromInitiator(initiatorWidget);
-    return instance.pushFirst(context);
+    assert(
+        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+
+    return _initiatorInstance!.pushFirst(context);
   }
 
   @override
   List<Widget> getLoadedPages() {
-    final instance = _scopedDynamicRoutesManager
-        .dispenseParticipatorFromInitiator(initiatorWidget);
+    assert(
+        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
 
-    return instance.getLoadedPages();
+    return _initiatorInstance!.getLoadedPages();
   }
 
   @override
@@ -73,8 +77,18 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   @override
   void setNavigationLogicProvider(
       NavigationLogicProvider navigationLogicProvider) {
-    final instance = _scopedDynamicRoutesManager
-        .dispenseParticipatorFromInitiator(initiatorWidget);
-    instance.setNavigationLogicProvider(navigationLogicProvider);
+    assert(
+        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+
+    _initiatorInstance!.setNavigationLogicProvider(navigationLogicProvider);
+  }
+
+  @override
+  List<Future<T?>> pushFirstThenFor<T>(
+      BuildContext context, int numberOfPagesToPush) {
+    assert(
+        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+
+    return _initiatorInstance!.pushFirstThenFor(context, numberOfPagesToPush);
   }
 }

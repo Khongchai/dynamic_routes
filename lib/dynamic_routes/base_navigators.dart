@@ -30,6 +30,20 @@ abstract class InitiatorNavigator {
   /// array.
   Future<T?> pushFirst<T>(BuildContext context);
 
+  /// This is similar to [pushFor], but is called from the initiator. Internally,
+  /// we just call [pushFirst] first, then call [pushFor]. All methods of awaiting
+  /// the results mentioned above apply here as well.
+  ///
+  /// ```dart
+  /// dynamicRoutesInitiator.initializeRoutes(...);
+  ///  This will push the first page, then push 3 more pages. We are basically pushing a total of 4 pages.
+  /// final results = await Future.wait(dynamicRoutesInitiator.pushFirstThenFor(context, 3));
+  ///
+  /// print(results)  //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
+  /// ```
+  List<Future<T?>> pushFirstThenFor<T>(
+      BuildContext context, int numberOfPagesToPush);
+
   List<Widget> getLoadedPages();
 
   void setNavigationLogicProvider(
@@ -317,6 +331,17 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   }
 
   @override
+  List<Future<T?>> pushFirstThenFor<T>(
+      BuildContext context, int numberOfPagesToPush) {
+    final firstResult = pushFirst<T>(context);
+
+    final moreResults =
+        pushFor<T>(context, numberOfPagesToPush, currentPage: _widget!);
+
+    return [firstResult, ...moreResults];
+  }
+
+  @override
   void popCurrent<T>(BuildContext context,
       {required Widget currentPage, T? popResult}) async {
     assert(
@@ -332,29 +357,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     _widget = pageData.previousPage?.widget;
 
     return _navigationLogicProvider.back(context, _widget, popResult);
-  }
-
-  @override
-  void popFor<T>(BuildContext context, int numberOfPagesToPop,
-      {required Widget currentPage, T? popResult}) async {
-    if (numberOfPagesToPop == 0) return;
-
-    assert(
-        _widget != null,
-        "pushFirst() "
-        "of the dynamicRoutesInitiator instance should be called before calling "
-        "this method on a participator");
-
-    final _currentPage = _getCurrentPageDLLData(currentPage);
-
-    final currentPageIndex =
-        _currentPage.getTraversalSteps(PageDLLTraversalDirection.left);
-    // + 1 because we allow the first participator page to be popped as well.
-    final poppablePages = currentPageIndex + 1;
-    final loopCount = min(numberOfPagesToPop, poppablePages);
-    for (int i = 0; i < loopCount; i++) {
-      popCurrent(context, currentPage: _widget!, popResult: popResult);
-    }
   }
 
   @override
@@ -382,6 +384,29 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     }
 
     return results;
+  }
+
+  @override
+  void popFor<T>(BuildContext context, int numberOfPagesToPop,
+      {required Widget currentPage, T? popResult}) async {
+    if (numberOfPagesToPop == 0) return;
+
+    assert(
+        _widget != null,
+        "pushFirst() "
+        "of the dynamicRoutesInitiator instance should be called before calling "
+        "this method on a participator");
+
+    final _currentPage = _getCurrentPageDLLData(currentPage);
+
+    final currentPageIndex =
+        _currentPage.getTraversalSteps(PageDLLTraversalDirection.left);
+    // + 1 because we allow the first participator page to be popped as well.
+    final poppablePages = currentPageIndex + 1;
+    final loopCount = min(numberOfPagesToPop, poppablePages);
+    for (int i = 0; i < loopCount; i++) {
+      popCurrent(context, currentPage: _widget!, popResult: popResult);
+    }
   }
 
   @override

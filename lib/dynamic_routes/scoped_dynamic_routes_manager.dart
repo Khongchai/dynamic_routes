@@ -63,6 +63,9 @@ class _ScopedDynamicRoutesManagerImpl
     return queriedInstance!;
   }
 
+  /// Initiator actually does not exist...just a participator having its methods
+  /// partially exposed. That's why the Initiator widget needs to call this
+  /// method to dispense it a participator widget.
   @override
   DynamicRoutesNavigator dispenseParticipatorFromInitiator(
       Widget initiatorWidget) {
