@@ -43,12 +43,19 @@ class TestingUtils {
   }
 
   static InitiatorWidget generateInitiatorWidget(
-      List<ParticipatorWidget> participators) {
+      List<ParticipatorWidget> participators,
+
+      /// [pushForCount] should be length of participators - 1 because pushFirst
+      /// already pushes one page, then pushFor comes in and pushes the rest.
+      {pushForCount = 0}) {
     const key = Key("i");
     const backButtonKey = Key("i_b");
     const pushFirstButtonKey = Key("i_p");
+    const pushFirstThenForButtonKey = Key("i_p_t_f");
     return InitiatorWidget(
+      pushForCount: pushForCount,
       participatorPages: participators,
+      pushFirstWithForKey: pushFirstThenForButtonKey,
       key: key,
       backButtonKey: backButtonKey,
       pushFirstButtonKey: pushFirstButtonKey,
