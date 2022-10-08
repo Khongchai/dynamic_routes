@@ -64,6 +64,9 @@ class _ParticipatorPageState extends State<ParticipatorPage>
               key: Key(widget.title),
               onPressed: () async {
                 await dynamicRoutesParticipator.pushNext(context);
+
+                // Call setState once the next page has been popped to reset the
+                // cached value.
                 setState(() {});
 
                 // This is same as the one above

@@ -1,3 +1,4 @@
+import 'package:dynamic_routes/dynamic_routes/double_call_guard.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../base_navigators.dart';
@@ -15,7 +16,7 @@ mixin DynamicRoutesParticipator<T extends StatefulWidget> on State<T> {
       _ParticipatorNavigator(widget);
 }
 
-class _ParticipatorNavigator {
+class _ParticipatorNavigator with DoubleCallGuard {
   final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
 
   @visibleForTesting
@@ -44,17 +45,28 @@ class _ParticipatorNavigator {
   }
 
   void popCurrent<T>(BuildContext context, [T? result]) {
-    navigator.popCurrent(context,
-        currentPage: currentWidget, popResult: result);
+    invokeBack(() => navigator.popCurrent(context,
+        currentPage: currentWidget, popResult: result));
   }
 
-  Future<T?> pushNext<T>(BuildContext context) {
-    return navigator.pushNext(context, currentPage: currentWidget);
+  Future<T?> pushNext<T>(BuildContext context) async {
+    final result = await invokeNext<Future<T?>>(
+        () => navigator.pushNext(context, currentPage: currentWidget));
+
+    resetDoubleCallGuard();
+
+    return result;
   }
 
   List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush) {
-    return navigator.pushFor(context, numberOfPagesToPush,
-        currentPage: currentWidget);
+    final List<Future<T?>> result = invokeNext(() => navigator.pushFor(
+            context, numberOfPagesToPush,
+            currentPage: currentWidget)) ??
+        [];
+
+    resetDoubleCallGuard();
+
+    return result;
   }
 
   dynamic getCache() {

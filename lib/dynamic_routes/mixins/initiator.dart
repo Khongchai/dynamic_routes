@@ -1,3 +1,4 @@
+import 'package:dynamic_routes/dynamic_routes/double_call_guard.dart';
 import 'package:dynamic_routes/dynamic_routes/navigation_logic_provider.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -16,7 +17,9 @@ mixin DynamicRoutesInitiator<T extends StatefulWidget> on State<T> {
       _InitiatorNavigator(widget);
 }
 
-class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
+class _InitiatorNavigator
+    with DoubleCallGuard
+    implements InitiatorNavigator, DynamicRoutesDisposer {
   final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
 
   DynamicRoutesNavigator? _initiatorInstance;
@@ -43,11 +46,16 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
   }
 
   @override
-  Future<T?> pushFirst<T>(BuildContext context) {
+  Future<T?> pushFirst<T>(BuildContext context) async {
     assert(
         _initiatorInstance != null, "Did you forget to call initializeRoutes?");
 
-    return _initiatorInstance!.pushFirst(context);
+    final result = await invokeNext<Future<T?>>(
+        () => _initiatorInstance!.pushFirst(context));
+
+    resetDoubleCallGuard();
+
+    return result;
   }
 
   @override
@@ -89,6 +97,12 @@ class _InitiatorNavigator implements InitiatorNavigator, DynamicRoutesDisposer {
     assert(
         _initiatorInstance != null, "Did you forget to call initializeRoutes?");
 
-    return _initiatorInstance!.pushFirstThenFor(context, numberOfPagesToPush);
+    final List<Future<T?>> results = invokeNext(() => _initiatorInstance!
+            .pushFirstThenFor(context, numberOfPagesToPush)) ??
+        [];
+
+    resetDoubleCallGuard();
+
+    return results;
   }
 }

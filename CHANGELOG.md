@@ -16,6 +16,7 @@ Name change and docs edit
 - Sub-routing now possible.
 - For more customizability, the navigation logic _next_ and _back_ can now be extended, or replaced.
 - Before this version, using popCurrent was pointless other than for debugging purposes. Now, popCurrent guarantees that even in a nested navigation, it's going to be the current page that is popped, and that its navigation logic will be overridden when a new navigation logic provider is added.
+- Handled double-calling navigation methods.
 
 ### Docs-related
 
