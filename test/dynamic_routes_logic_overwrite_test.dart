@@ -47,20 +47,28 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(BuildContext context, Widget? previousPage, T result) {
+  void back<T>(
+      {required BuildContext context,
+      Widget? previousPage,
+      required Widget currentPage,
+      required T result}) {
     customBackCallback();
 
-    super.back(context, previousPage, result);
+    super.back(
+        context: context,
+        previousPage: previousPage,
+        currentPage: currentPage,
+        result: result);
   }
 
   @override
-  Future<T?> next<T>(
-    BuildContext context,
-    Widget nextWidget,
-  ) async {
+  Future<T?> next<T>({
+    required BuildContext context,
+    required Widget nextPage,
+  }) async {
     customNextCallback();
 
-    return super.next(context, nextWidget);
+    return super.next(context: context, nextPage: nextPage);
   }
 }
 

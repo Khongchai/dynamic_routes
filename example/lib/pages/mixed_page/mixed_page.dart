@@ -10,6 +10,7 @@ class MixedPage extends StatefulWidget {
   final Function(BuildContext context) subFlowSet1Callback;
   final List<Widget> subFlowSet2;
   final Function(BuildContext context) subFlowSet2Callback;
+
   const MixedPage(
       {required this.isSubSubFlow,
       required this.subFlowSet1,
