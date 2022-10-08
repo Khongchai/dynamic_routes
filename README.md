@@ -389,7 +389,7 @@ void initiateDynamicRoutesInstane() {
 
 ```
 
-### In this second example, we extend the already exsiting implementation and log to firebase everytime a navigation occurs.
+### In this second example, we extend the already existing implementation and log to firebase everytime a navigation occurs.
 
 ```dart
 // Create a new class that extends the implementation of NavigationLogicProvider

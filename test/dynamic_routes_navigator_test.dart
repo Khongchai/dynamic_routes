@@ -121,6 +121,14 @@ void main() {
       expect(() => initiatorWidgetState.dynamicRoutesInitiator.getLoadedPages(),
           throwsAssertionError);
     });
+
+    testWidgets(
+        "Calling pushNext from the same page twice should throw an error",
+        (tester) async {
+      //TODO find out first what happens when you do this.
+      // TODO maybe you don't even have to throw an error, just silently
+      // TODO let it go.
+    });
   });
 
   group("Interaction testing", () {
@@ -436,11 +444,6 @@ void main() {
           "In a nested navigation, using popCurrent should guarantees that"
           "the current participator page will be popped along with all routes it "
           "initiated as an Initiator", (tester) async {
-        final participatorsSet1 = TestingUtils.generateParticipatorWidget(5);
-        final participatorsSet2 = TestingUtils.generateParticipatorWidget(5);
-        final initiator = TestingUtils.generateInitiatorWidget([]);
-        //TODO once you get it, see it fails first using the first version.
-
         // 1. Push initiator
         // 2. Push like 2 participators
         // 3. Push the mixed page
@@ -448,6 +451,67 @@ void main() {
         // lastCallback = popCurrent
         // 5. Once lastCallback is called, assert that we are back to the last
         // participator page from step 2.
+
+        const baseParticipatorsIdentifier = "Base Participators";
+        const nestedParticipatorsIdentifier = "Nested Participators";
+        final baseParticipatorsSet = TestingUtils.generateParticipatorWidget(2,
+            extraIdentifier: baseParticipatorsIdentifier);
+        final nestedParticipatorsSet = TestingUtils.generateParticipatorWidget(
+            2,
+            extraIdentifier: nestedParticipatorsIdentifier);
+        final mixedWidget = TestingUtils.generateMixedWidget(
+            subPages: nestedParticipatorsSet, pageIndex: 2);
+
+        final initiator = TestingUtils.generateInitiatorWidget(
+            [...baseParticipatorsSet, mixedWidget]);
+
+        await tester.pumpWidget(initiator);
+        await tester.pumpAndSettle();
+
+        TestingUtils.expectPageExistsAtIndex(-1);
+
+        await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
+        await tester.pumpAndSettle();
+
+        await tester
+            .tap(find.byKey(baseParticipatorsSet[0].pushNextButtonKey!));
+        await tester.pumpAndSettle();
+
+        await tester
+            .tap(find.byKey(baseParticipatorsSet[1].pushNextButtonKey!));
+        await tester.pumpAndSettle();
+
+        // Check that it's the MixedPage.
+        TestingUtils.expectPageExistsAtIndex(2);
+
+        final mixedPageState =
+            TestingUtils.getMixedWidgetStateFromKey(tester, mixedWidget.key!);
+        bool isCallbackCalled = false;
+        mixedPageState.lastPageCallback = (context) {
+          isCallbackCalled = true;
+          mixedPageState.dynamicRoutesParticipator.popCurrent(context);
+        };
+        await tester.tap(find.byKey(mixedWidget.branchOffButton!));
+        await tester.pumpAndSettle();
+
+        // Check that it's the first participator page of the nested set.
+        TestingUtils.expectPageExistsAtIndex(0);
+
+        await tester
+            .tap(find.byKey(nestedParticipatorsSet[0].pushNextButtonKey!));
+        await tester.pumpAndSettle();
+
+        await tester
+            .tap(find.byKey(nestedParticipatorsSet[1].pushNextButtonKey!));
+        await tester.pumpAndSettle();
+
+        // Check that it's the second participator page of the base flow.
+        TestingUtils.expectPageExistsAtIndex(1);
+        expect(find.text(nestedParticipatorsIdentifier), findsNothing);
+        expect(find.text(baseParticipatorsIdentifier), findsOneWidget);
+
+        // Check that the nested flow has ended
+        expect(isCallbackCalled, true);
       });
     });
   });

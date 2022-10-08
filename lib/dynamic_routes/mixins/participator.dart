@@ -57,10 +57,6 @@ class _ParticipatorNavigator {
         currentPage: currentWidget);
   }
 
-  bool pushNextOfLastPageCalled() {
-    return navigator.pushNextOfLastPageCalled();
-  }
-
   dynamic getCache() {
     return _scopedDynamicRoutesManager.getCacheOfThisScope(currentWidget,
         isInitiator: false);

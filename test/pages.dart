@@ -96,24 +96,34 @@ class MixedWidget extends StatefulWidget {
   final Key? branchOffButton;
   final Key? continueFlowButton;
   final List<ParticipatorWidget> subPages;
-  final Function(BuildContext context) lastPageCallback;
+  final Function(BuildContext context)? lastPageCallback;
 
   const MixedWidget(
       {required this.subPages,
       this.pageIndex,
       this.branchOffButton,
       this.continueFlowButton,
-      required this.lastPageCallback,
+      this.lastPageCallback,
       Key? key})
       : super(key: key);
 
   @override
-  State<MixedWidget> createState() => _MixedWidgetState();
+  State<MixedWidget> createState() => MixedWidgetState();
 }
 
-class _MixedWidgetState extends State<MixedWidget>
+class MixedWidgetState extends State<MixedWidget>
     with DynamicRoutesInitiator, DynamicRoutesParticipator {
   late final int? pageIndex = widget.pageIndex;
+
+  @override
+  void dispose() {
+    dynamicRoutesInitiator.dispose();
+
+    super.dispose();
+  }
+
+  late Function(BuildContext context)? lastPageCallback =
+      widget.lastPageCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +132,13 @@ class _MixedWidgetState extends State<MixedWidget>
       TextButton(
           onPressed: () {
             dynamicRoutesInitiator.initializeRoutes(widget.subPages,
-                lastPageCallback: widget.lastPageCallback);
+                lastPageCallback: lastPageCallback);
             dynamicRoutesInitiator.pushFirst(context);
           },
+          key: widget.branchOffButton,
           child: const Text("Branch Off")),
       TextButton(
+          key: widget.continueFlowButton,
           onPressed: () {
             dynamicRoutesParticipator.pushNext(context);
           },
@@ -140,12 +152,14 @@ class ParticipatorWidget extends StatefulWidget {
   final Key? backButtonKey;
   final Key? backButtonWithValueKey;
   final int? pageIndex;
+  final String? extraIdentifier;
 
   const ParticipatorWidget(
       {this.pushNextButtonKey,
       this.backButtonKey,
       this.backButtonWithValueKey,
       this.pageIndex,
+      this.extraIdentifier,
       Key? key})
       : super(key: key);
 
@@ -162,6 +176,7 @@ class ParticipatorWidgetState extends State<ParticipatorWidget>
   Widget build(BuildContext context) {
     return Column(
       children: [
+        if (widget.extraIdentifier != null) Text(widget.extraIdentifier!),
         if (pageIndex != null) Text(currentPageIndexText + "$pageIndex"),
         if (valueFromPoppedPage != null) Text(valueFromPoppedPage!),
         TextButton(
