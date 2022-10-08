@@ -123,12 +123,20 @@ void main() {
     });
 
     testWidgets(
-        "Calling pushNext from the same page twice should throw an error",
+        "Calling pushNext from the same page twice should be the same as calling it once.",
         (tester) async {
       //TODO find out first what happens when you do this.
       // TODO maybe you don't even have to throw an error, just silently
       // TODO let it go.
     });
+
+    testWidgets(
+        "Calling popCurrent from the same page twice should be the same as calling it once.",
+            (tester) async {
+          //TODO find out first what happens when you do this.
+          // TODO maybe you don't even have to throw an error, just silently
+          // TODO let it go.
+        });
   });
 
   group("Interaction testing", () {
