@@ -220,8 +220,6 @@ abstract class DynamicRoutesNavigator
   /// Use as a safeguard to prevent this being used before the states are loaded.
   bool _isStackLoaded = false;
 
-  bool _isPostLastPage = false;
-
   Function(BuildContext context)? _lastPageCallback;
 
   late NavigationLogicProvider _navigationLogicProvider;
@@ -260,7 +258,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     _lastPageCallback = lastPageCallback;
     _isStackLoaded = true;
     _pageDataMap = _generatePageStates(pages: pages);
-    _isPostLastPage = false;
   }
 
   Map<int, PageDLLData> _generatePageStates({required List<Widget> pages}) {
@@ -301,8 +298,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
     if (currentPageState.isLastPage()) {
       _lastPageCallback?.call(context);
-
-      _isPostLastPage = true;
 
       return Future.value(null);
     } else {
