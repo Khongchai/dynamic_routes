@@ -256,8 +256,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
   void initializeRoutes(List<Widget> pages,
       {Function(BuildContext context)? lastPageCallback, dynamic scopedCache}) {
     _lastPageCallback = lastPageCallback;
-    _isStackLoaded = true;
     _pageDataMap = _generatePageStates(pages: pages);
+    _isStackLoaded = true;
   }
 
   Map<int, PageDLLData> _generatePageStates({required List<Widget> pages}) {
