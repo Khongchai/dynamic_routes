@@ -20,7 +20,6 @@ import 'package:flutter/cupertino.dart';
 /// Forward: [pushNext], [pushFor], [pushFirst], [pushFirstThenFor]
 /// Backward: [popCurrent], [popFor]
 mixin DoubleCallGuard {
-
   @protected
   bool isNextCalled = false;
 
@@ -30,7 +29,8 @@ mixin DoubleCallGuard {
   @protected
   T? invokeNext<T>(T? Function() nextCallback) {
     if (isNextCalled) {
-      debugPrint("Next invoked twice on the same Navigator instance");
+      debugPrint("⚠️Next invoked twice on the same Navigator instance.  ⚠️");
+      debugPrint("⚠️We are letting only the first invocation through.  ⚠️");
       return null;
     }
 
@@ -42,7 +42,8 @@ mixin DoubleCallGuard {
   @protected
   void invokeBack(VoidCallback backCallback) {
     if (isBackCalled) {
-      debugPrint("Back invoked twice on the same Navigator instance");
+      debugPrint("⚠️Back invoked twice on the same Navigator instance   ⚠️");
+      debugPrint("⚠️We are letting only the first invocation through.   ⚠️");
       return;
     }
 
