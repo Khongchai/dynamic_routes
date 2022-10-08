@@ -16,8 +16,6 @@ This library comprises two main parts, the _Initiator_, and the _Participator_.
 
 The _Initiator_ page is a page immeidately before where you want your dynamic navigation flow to happen. We'll put all the navigation logic in this page.
 
-For the page directly before your dynamic navigation the flow:
-
 ```dart
 
 class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesInitiator {
@@ -199,8 +197,7 @@ This method guarantees that you will never push beyond the last Participator pag
 
 ```dart
 // Pushes for 4 times.
-dynamicRoutesParticipator.pushFor(context, 4
-);
+dynamicRoutesParticipator.pushFor(context, 4);
 
 dynamicRoutesParticipator.pushFor();
 ```
@@ -210,10 +207,7 @@ so:
 
 ```dart
 // Assume that we are in the first participator page.
-final results = await
-Future.wait(dynamicRoutesParticipator.pushFor(context, 3
-)
-);
+final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 3));
 
 print(results); // [resultFromSecond, resultFromThird, resultFromFourth];
 ```
@@ -229,17 +223,11 @@ This is similar to _pushFor_, but is called from the initiator. Internally, we j
 first, then call _pushFor_. All methods of awaiting the results mentioned above apply here as well.
 
 ```dart
-dynamicRoutesInitiator.initializeRoutes(...
-);
+dynamicRoutesInitiator.initializeRoutes(...);
 // This will push the first page, then push 3 more pages. We are basically pushing a total of 4 pages.
-final results = await
-Future.wait(dynamicRoutesInitiator.pushFirstThenFor(context, 3
-)
-);
+final results = await Future.wait(dynamicRoutesInitiator.pushFirstThenFor(context, 3));
 
-print
-(
-results) //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
+print(results); //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
 ```
 
 ---
