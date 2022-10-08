@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'dynamic_routes_navigator_test.dart';
+import 'pages.dart';
+
 
 class TestingUtils {
   TestingUtils._();

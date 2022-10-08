@@ -1,7 +1,7 @@
 # Dynamic Routes
 
 Dynamic Routes is a library that lets you specify in advance which routes should be shown and in
-what order. This is invaluable for flow management -- when you want some routes to show, or their
+what order, from just 1 place in your code. This is invaluable for flow management -- when you want some routes to show, or their
 order swapped, based on some information that you obtain during runtime.
 
 _This method assumes your pages don't depend on any data from other pages. Technically, they can
@@ -14,11 +14,9 @@ _Note: I'll be using the words Widget, Page, and Route interchangeably_
 
 This library comprises two main parts, the _Initiator_, and the _Participator_.
 
-We can begin by marking the participating page with the _DynamicRoutesParticipator_ mixin. This
-would give that component access to the dynamicRoutesParticipator instance that is tied to the scope
-of the Initiator page that we'll mark with the _DynamicRoutesInitiator_.
+The _Initiator_ page is a page immeidately before where you want your dynamic navigation flow to happen. We'll put all the navigation logic in this page.
 
-For the page directly before the flow:
+For the page directly before your dynamic navigation the flow:
 
 ```dart
 
@@ -29,19 +27,22 @@ class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesInitiator {
   void onButtonPressed() {
     const isPage4Required = calculateIfPage4IsRequired();
 
+    final routes = [
+      Page1(),
+      Page2(),
+      Page3(),
+      if (isPage4Required) Page4(),
+      Page5(),
+    ];
+
     dynamicRoutesInitiator.initializeRoutes(
-        [
-          Page1(),
-          Page2(),
-          Page3(),
-          if (isPage4Required) Page4(),
-          Page5(),
-        ],
+        routes,
         lastPageCallback: (context) {
           // Do something; maybe return to homepage.
         }
     );
 
+    // This will push the first Participator page.
     dynamicRoutesInitiator.pushFirst(context);
   }
 
@@ -50,15 +51,37 @@ class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesInitiator {
 }
 ```
 
-And then in the pages that are included in the array (the "participating" pages):
+---
+
+The pages in the _routes_ array are Participator pages. These pages do not have navigation logic in them, the only thing they know is when to go to the next page and when to go back. 
 
 ```dart
 
 class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesParticipator {
-  void onButtonPressed() => dynamicRoutesParticipator.pushNext(context);
+  void onNextButtonPressed() => dynamicRoutesParticipator.pushNext(context);
+  void onBackButtonPressed() => dynamicRoutesParticipator.popCurrent(context);
+
 //...build methods and whatever
 }
 ```
+
+### A bit more about _popCurrent_
+
+_popCurrent_ behaves similiarly to using Navigator.of(context).pop for most usecases. 
+However, where possible, use the one provided by dynamicRoutesParticipator instead
+
+There are two reasons why this is preferred.
+
+1. Its implementation is bound to the NavigationLogicProvider, which can be overridden (see the extending navigation logic section).
+
+2. This will guarantee that the page being popped is the current page.
+In the next section, we'll show how you can do nested navigation with this library. In a
+nested navigation, as you can imagine, a participator can also have its own flow, and using 
+Navigator.of(context).pop will pop the page at the top of the stack instead of popping the current
+participator page.
+
+But, all in all, using Navigator.of(context).pop will not break your app. By default, the back button uses the pop method anyway.
+---
 
 We can dispose the _DynamicRoutesInitiator_ instance along with the page itself by calling the
 Initiator's _dispose_ method in the state's _dispose_ method. This will also dispose all
@@ -75,11 +98,12 @@ void dispose() {
 
 ```
 
+---
+
 ## Nested Navigation
 
 You can also have a sort of sub-routing navigation, where for example, the second member in the
-Initiator array is itself, also an Initiator, and can branch off into its dynamic routing
-navigation.
+Initiator array is itself, also an Initiator, and can branch off into its own dynamic navigation flow.
 
 To do this, we simply mark the state of the second page with both the Participator and the Initiator
 mixins.
@@ -105,9 +129,15 @@ Widget buildButtons() {
                 ParticipatorPage(title: "SubFlow 1 Sub page 2"),
                 ParticipatorPage(title: "SubFlow 1 Sub page 3"),
               ], lastPageCallback: (context) {
+                // We can use Navigator.of(context).pop here because we're just saying that,
+                // after the sub-flow ends, pop back to this page.
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
+
+                // If you do this, this page, and all of the pages in the subflow that branched off
+                // from this page, will be popped. Internally, we're using popUntil
+                // dynamicRoutesParticipator.popCurrent(context);
               });
             }
         ),
@@ -119,6 +149,8 @@ Widget buildButtons() {
   );
 }
 ```
+
+---
 
 ## Doubly-Nested Navigation
 
@@ -154,8 +186,10 @@ Widget buildButtons() {
   );
 }
 ```
+---
 
 ## Multi-page Navigation
+
 
 ### pushFor
 
@@ -187,6 +221,8 @@ print(results); // [resultFromSecond, resultFromThird, resultFromFourth];
 The method is only available to the Participators instances. To use pushFor from an Initiator, use
 _pushFirstThenFor_.
 
+---
+
 ### pushFirstThenFor
 
 This is similar to _pushFor_, but is called from the initiator. Internally, we just call _pushFirst_
@@ -206,6 +242,8 @@ print
 results) //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
 ```
 
+---
+
 ### popFor
 
 You can reset the flow, eg. go back to the first Participator page, or the Initiator page with _
@@ -215,10 +253,7 @@ _popFor_ guarantees that you will never pop beyond the Initiator page.
 
 ```dart
 // Pop just 2 pages while returning true as the result to those two pages.
-dynamicRoutesNavigator.popFor(context, 2
-,
-true
-);
+dynamicRoutesNavigator.popFor(context, 2 , true);
 
 // This pops until the first participator page.
 final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
@@ -228,6 +263,8 @@ dynamicRoutesNavigator.popFor(context, currentPageIndex);
 dynamicRoutesNavigator.popFor(context, currentPageIndex);
 dynamicRoutesNavigator.popFor(context, double.infinity);
 ```
+
+---
 
 ## Caching
 
@@ -305,13 +342,18 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(BuildContext _, Widget? previousPage, T __) {
+  void back<T>(
+    {required BuildContext context,
+      Widget? previousPage,
+      required Widget currentPage,
+      required T result}) {
     customBackCallback(previousPage);
   }
 
   @override
-  Future<T?> next<T>(BuildContext _,
-      Widget nextWidget,) async {
+  Future<T?> next<T>(
+    {BuildContext context,
+      Widget nextPage}) async {
     customNextCallback(nextWidget);
 
     return null;
@@ -355,25 +397,36 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
   const CustomNavigationLogicProvider();
 
   @override
-  Future<T?> next<T>(BuildContext context, Widget nextPage) async {
+  Future<T?> next<T>({
+    required BuildContext context,
+    required Widget nextPage,
+  }) async {
     // Add the extra functionality(-ies) that we want
     logsToFireBase("forward");
 
-    return super.next(context, nextPage);
+    return super.next(context: context, nextPage: nextPage);
   }
 
   @override
-  void back<T>(BuildContext context, T result) {
+  void back<T>(
+    {required BuildContext context,
+      Widget? previousPage,
+      required Widget currentPage,
+      required T result}) {
     // Add the extra functionality(-ies) that we want
     logsToFireBase("back");
 
-    super.back(context, result);
+    super.back(
+      context: context,
+      previousPage: previousPage,
+      currentPage: currentPage,
+      result: result);
   }
 }
 
 // ... somewhere inside your Initiator widget
 
-void initiateDynamicRoutesInstane() {
+void initiateDynamicRoutesInstance() {
   // Initialize normally
   dynamicRoutesInitiator.initializeRoutes(_widgets,
       lastPageCallback: (newContext) {
