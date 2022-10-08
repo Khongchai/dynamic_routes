@@ -606,12 +606,4 @@ void main() {
       expect(stateToTest.dynamicRoutesParticipator.getCache(), mockCacheData);
     });
   });
-
-  // TODO
-  group("Custom navigation logic implementation test", () {
-    test("Replaces the navigation logic with just widgets replacement", () {});
-
-    test("Adds more stuff to each of the navigation action (next and back)",
-        () {});
-  });
 }

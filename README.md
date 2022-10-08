@@ -161,21 +161,25 @@ Widget buildButtons() {
 
 You can push until the last Participator page, or until lastPageCallback with _pushFor_.
 
-This method guarantees that you will never push beyond the last Participator page. 
+This method guarantees that you will never push beyond the last Participator page.
 
 ```dart
 // Pushes for 4 times.
-dynamicRoutesParticipator.pushFor(context, 4);
+dynamicRoutesParticipator.pushFor(context, 4
+);
 
 dynamicRoutesParticipator.pushFor();
 ```
 
-The method returns a list of Future of results from each of the page; you can await all of them 
-like so:
+The method returns a list of Future of results from each of the page; you can await all of them like
+so:
 
 ```dart
 // Assume that we are in the first participator page.
-final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 3));
+final results = await
+Future.wait(dynamicRoutesParticipator.pushFor(context, 3
+)
+);
 
 print(results); // [resultFromSecond, resultFromThird, resultFromFourth];
 ```
@@ -185,26 +189,36 @@ _pushFirstThenFor_.
 
 ### pushFirstThenFor
 
-This is similar to _pushFor_, but is called from the initiator. Internally, we just call _pushFirst_ first, then call _pushFor_. All methods of awaiting the results mentioned above apply here as well.
+This is similar to _pushFor_, but is called from the initiator. Internally, we just call _pushFirst_
+first, then call _pushFor_. All methods of awaiting the results mentioned above apply here as well.
 
 ```dart
-dynamicRoutesInitiator.initializeRoutes(...);
+dynamicRoutesInitiator.initializeRoutes(...
+);
 // This will push the first page, then push 3 more pages. We are basically pushing a total of 4 pages.
-final results = await Future.wait(dynamicRoutesInitiator.pushFirstThenFor(context, 3));
+final results = await
+Future.wait(dynamicRoutesInitiator.pushFirstThenFor(context, 3
+)
+);
 
-print(results)  //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
+print
+(
+results) //[resultFromFirst, resultFromSecond, resultFromThird, resultFromFourth]
 ```
 
 ### popFor
 
-You can reset the flow, eg. go back to the first Participator page, or the Initiator page
-with _popFor_.
+You can reset the flow, eg. go back to the first Participator page, or the Initiator page with _
+popFor_.
 
 _popFor_ guarantees that you will never pop beyond the Initiator page.
 
 ```dart
 // Pop just 2 pages while returning true as the result to those two pages.
-dynamicRoutesNavigator.popFor(context, 2, true);
+dynamicRoutesNavigator.popFor(context, 2
+,
+true
+);
 
 // This pops until the first participator page.
 final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
@@ -214,7 +228,6 @@ dynamicRoutesNavigator.popFor(context, currentPageIndex);
 dynamicRoutesNavigator.popFor(context, currentPageIndex);
 dynamicRoutesNavigator.popFor(context, double.infinity);
 ```
-
 
 ## Caching
 
@@ -266,16 +279,21 @@ better off using some dependency injection libraries for your cache.
 
 ## Modifying, extending, or replacing the navigation logic.
 
-It is possible to partly, or completely supplant or modify the navigation logic. If you want, for example, to do something everytime pushNext or pop is called, you can implement the NavigationLogicProvider class or its implementation, and provide yours as the new navigationLogicProvider.
+It is possible to partly, or completely supplant or modify the navigation logic. If you want, for
+example, to do something everytime pushNext or pop is called, you can implement the
+NavigationLogicProvider class or its implementation, and provide yours as the new
+navigationLogicProvider.
 
-_Note that setNavigationLogicProvider only exposes the part of the library that deals with the navigation after TODO_
+_Note that setNavigationLogicProvider only exposes the part of the library that deals with the
+navigation after TODO_
 
-### In the first example, we replaces the navigation logic completely. 
+### In the first example, we replaces the navigation logic completely.
 
-Instead of calling Flutter's _Navigator.of(context).push_, we just swap out the current widget with a new one.
+Instead of calling Flutter's _Navigator.of(context).push_, we just swap out the current widget with
+a new one.
 
-_customNextCallback_ and _customBackCallback_ are just methods that I added to this class so that we can pass it custom implementation
-from elsewhere.
+_customNextCallback_ and _customBackCallback_ are just methods that I added to this class so that we
+can pass it custom implementation from elsewhere.
 
 ```dart
 // Create a new class that extends NavigationLogicProvider.
@@ -292,10 +310,8 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
   }
 
   @override
-  Future<T?> next<T>(
-    BuildContext _,
-    Widget nextWidget,
-  ) async {
+  Future<T?> next<T>(BuildContext _,
+      Widget nextWidget,) async {
     customNextCallback(nextWidget);
 
     return null;
@@ -305,22 +321,22 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
 // ... somewhere inside your Initiator widget
 late final CustomNavigationLogicProvider _customNavigationLogicProvider;
 
-void initiateDynamicRoutesInstane(){
+void initiateDynamicRoutesInstane() {
   // Initialize normally
   dynamicRoutesInitiator.initializeRoutes(_widgets,
       lastPageCallback: (newContext) {
-    Navigator.popUntil(newContext, (route) => route.isFirst);
-  });
+        Navigator.popUntil(newContext, (route) => route.isFirst);
+      });
 
   final customNavigationLogicProvider = CustomNavigationLogicProvider(
-    customNextCallback: (Widget widget) {
-      setState(() {
-        _displayedWidget = widget;
-      });
-    }, customBackCallback: (Widget? maybeAWidget) {
-      setState(() {
-        _displayedWidget = maybeAWidget;
-      });
+      customNextCallback: (Widget widget) {
+        setState(() {
+          _displayedWidget = widget;
+        });
+      }, customBackCallback: (Widget? maybeAWidget) {
+    setState(() {
+      _displayedWidget = maybeAWidget;
+    });
   });
 
   // Again, make sure this is called after initializeRoutes.
@@ -357,12 +373,12 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
 
 // ... somewhere inside your Initiator widget
 
-void initiateDynamicRoutesInstane(){
+void initiateDynamicRoutesInstane() {
   // Initialize normally
   dynamicRoutesInitiator.initializeRoutes(_widgets,
       lastPageCallback: (newContext) {
-    Navigator.popUntil(newContext, (route) => route.isFirst);
-  });
+        Navigator.popUntil(newContext, (route) => route.isFirst);
+      });
 
   final customNavigationLogicProvider = CustomNavigationLogicProvider();
 
