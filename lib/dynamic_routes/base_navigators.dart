@@ -9,7 +9,7 @@ abstract class DynamicRoutesDisposer {
   /// it does nothing.
   ///
   /// Reason being, sometimes, you might want to both dispose the references when
-  /// the Initiator widget's state /// is disposed and when the callback is called,
+  /// the Initiator widget's state is disposed and when the callback is called,
   /// but you are not sure which one should happen first. The fix is to just call
   /// the dispose method in both places (or more).
   void dispose({bool clearCache = true});
@@ -133,9 +133,6 @@ abstract class ParticipatorNavigator {
   /// _pushFirstThenFor_.
   List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush,
       {required Widget currentPage});
-
-  /// For verifying the progress of the flow. If this is true, the flow has ended.
-  bool pushNextOfLastPageCalled();
 }
 
 /// Let's say that your login flow requires the user to fill in their information
@@ -410,11 +407,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     for (int i = 0; i < loopCount; i++) {
       popCurrent(context, currentPage: _widget!, popResult: popResult);
     }
-  }
-
-  @override
-  bool pushNextOfLastPageCalled() {
-    return _isPostLastPage;
   }
 
   PageDLLData _getCurrentPageDLLData(Widget? currentPage) {
