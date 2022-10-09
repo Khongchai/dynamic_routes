@@ -29,7 +29,9 @@ mixin DoubleCallGuard {
   @protected
   T? invokeNext<T>(T? Function() nextCallback) {
     if (isNextCalled) {
-      debugPrint("⚠️Next invoked twice on the same Navigator instance.  ⚠️");
+      debugPrint(
+          "⚠️Next invoked more than once on the same Navigator instance before "
+          "a navigation can happen.  ⚠️");
       debugPrint("⚠️We are letting only the first invocation through.  ⚠️");
       return null;
     }
@@ -42,7 +44,9 @@ mixin DoubleCallGuard {
   @protected
   void invokeBack(VoidCallback backCallback) {
     if (isBackCalled) {
-      debugPrint("⚠️Back invoked twice on the same Navigator instance   ⚠️");
+      debugPrint(
+          "⚠️Back invoked more than once on the same Navigator instance before "
+          "a navigation can happen.  ⚠️");
       debugPrint("⚠️We are letting only the first invocation through.   ⚠️");
       return;
     }
