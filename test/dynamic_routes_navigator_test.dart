@@ -1,5 +1,3 @@
-import 'package:dynamic_routes/dynamic_routes/mixins/initiator.dart';
-import 'package:dynamic_routes/dynamic_routes/mixins/participator.dart';
 import "package:flutter/material.dart";
 import "package:flutter_test/flutter_test.dart";
 
@@ -162,21 +160,6 @@ void main() {
           throwsAssertionError);
     });
 
-    testWidgets(
-        "Calling pushNext from the same page twice should be the same as calling it once.",
-        (tester) async {
-      //TODO find out first what happens when you do this.
-      // TODO maybe you don't even have to throw an error, just silently
-      // TODO let it go.
-    });
-
-    testWidgets(
-        "Calling popCurrent from the same page twice should be the same as calling it once.",
-        (tester) async {
-      //TODO find out first what happens when you do this.
-      // TODO maybe you don't even have to throw an error, just silently
-      // TODO let it go.
-    });
   });
 
   group("Interaction testing", () {
@@ -603,7 +586,7 @@ void main() {
     });
 
     testWidgets(
-        "Once a navigation scope is dispoed, the cache should be cleared",
+        "Once a navigation scope is disposed, the cache should be cleared",
         (tester) async {});
   });
 }

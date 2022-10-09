@@ -330,18 +330,12 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(
-    {required BuildContext context,
-      Widget? previousPage,
-      required Widget currentPage,
-      required T result}) {
+  void back<T>(_) {
     customBackCallback(previousPage);
   }
 
   @override
-  Future<T?> next<T>(
-    {BuildContext context,
-      Widget nextPage}) async {
+  Future<T?> next<T>(_) async {
     customNextCallback(nextWidget);
 
     return null;
@@ -385,30 +379,19 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
   const CustomNavigationLogicProvider();
 
   @override
-  Future<T?> next<T>({
-    required BuildContext context,
-    required Widget nextPage,
-  }) async {
+  Future<T?> next<T>(NextArguments args) async {
     // Add the extra functionality(-ies) that we want
     logsToFireBase("forward");
 
-    return super.next(context: context, nextPage: nextPage);
+    return super.next(args);
   }
 
   @override
-  void back<T>(
-    {required BuildContext context,
-      Widget? previousPage,
-      required Widget currentPage,
-      required T result}) {
+  void back<T>(BackArguments args) {
     // Add the extra functionality(-ies) that we want
     logsToFireBase("back");
 
-    super.back(
-      context: context,
-      previousPage: previousPage,
-      currentPage: currentPage,
-      result: result);
+    super.back(args);
   }
 }
 

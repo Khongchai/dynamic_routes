@@ -1,9 +1,7 @@
-import 'package:dynamic_routes/dynamic_routes/mixins/initiator.dart';
 import 'package:dynamic_routes/dynamic_routes/navigation_logic_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'dynamic_routes_navigator_test.dart';
 import 'testing_utils.dart';
 
 class HomePage extends StatefulWidget {
@@ -47,28 +45,17 @@ class CustomNavigationLogicProvider extends NavigationLogicProviderImpl {
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(
-      {required BuildContext context,
-      Widget? previousPage,
-      required Widget currentPage,
-      required T result}) {
+  void back<T>(args) {
     customBackCallback();
 
-    super.back(
-        context: context,
-        previousPage: previousPage,
-        currentPage: currentPage,
-        result: result);
+    super.back(args);
   }
 
   @override
-  Future<T?> next<T>({
-    required BuildContext context,
-    required Widget nextPage,
-  }) async {
+  Future<T?> next<T>(args) async {
     customNextCallback();
 
-    return super.next(context: context, nextPage: nextPage);
+    return super.next(args);
   }
 }
 

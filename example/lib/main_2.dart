@@ -1,6 +1,5 @@
 import 'package:dynamic_routes/dynamic_routes/mixins/initiator.dart';
 import 'package:dynamic_routes/dynamic_routes/navigation_logic_provider.dart';
-import 'package:example/pages/mixed_page/mixed_page.dart';
 import 'package:example/pages/participator_page.dart';
 import 'package:flutter/material.dart';
 
@@ -58,18 +57,13 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(
-      {required BuildContext context,
-      Widget? previousPage,
-      required Widget currentPage,
-      required T result}) {
-    customBackCallback(previousPage);
+  void back<T>(BackArguments args) {
+    customBackCallback(args.previousPage);
   }
 
   @override
-  Future<T?> next<T>(
-      {required BuildContext context, required Widget nextPage}) {
-    customNextCallback(nextPage);
+  Future<T?> next<T>(args) {
+    customNextCallback(args.nextPage);
 
     return Future.value(null);
   }

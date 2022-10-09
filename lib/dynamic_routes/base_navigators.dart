@@ -303,8 +303,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     } else {
       _widget = currentPageState.nextPage!.widget;
 
-      return _navigationLogicProvider.next(
-          context: context, nextPage: _widget!);
+      return _navigationLogicProvider
+          .next(NextArguments(context: context, nextPage: _widget!));
     }
   }
 
@@ -317,8 +317,8 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
     final firstPage = _pageDataMap.values.first;
 
-    return _navigationLogicProvider.next(
-        context: context, nextPage: firstPage.widget);
+    return _navigationLogicProvider
+        .next(NextArguments(context: context, nextPage: firstPage.widget));
   }
 
   @override
@@ -347,11 +347,11 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
     // popping this should destroy the whole navigation state.
     _widget = pageData.previousPage?.widget;
 
-    return _navigationLogicProvider.back(
+    return _navigationLogicProvider.back(BackArguments(
         context: context,
-        previousPage: _widget,
         currentPage: pageData.widget,
-        result: popResult);
+        result: popResult,
+        previousPage: _widget));
   }
 
   @override
