@@ -77,6 +77,9 @@ abstract class ParticipatorNavigator {
 
   /// Returns how many pages are left until the last page.
   /// 0 means it's the last page.
+  ///
+  /// getProgressFromCurrentPage() + 1 means push until the last page and then
+  /// invoke [lastPageCallback].
   int getProgressFromCurrentPage(Widget currentPage);
 
   /// Returns the page widget that belongs to the current route
@@ -102,43 +105,36 @@ abstract class ParticipatorNavigator {
   /// _popFor_ guarantees that you will never pop beyond the Initiator page.
   ///
   /// ```dart
-  ///  Pop just 2 pages while returning true as the result to those two pages.
+  /// // Pop just 2 pages while returning true as the result to those two pages.
   /// dynamicRoutesNavigator.popFor(context, 2, true);
   ///
-  ///  This pops until the first participator page.
+  /// // This pops until the first participator page.
   /// final currentPageIndex = dynamicRoutesNavigator.getCurrentPageIndex();
   /// dynamicRoutesNavigator.popFor(context, currentPageIndex);
   ///
-  ///  Add + 1 to currentPageIndex or just use double.infinity to pop to the Initiator page.
+  /// // Add + 1 to currentPageIndex or just use double.infinity to pop to the Initiator page.
   /// dynamicRoutesNavigator.popFor(context, currentPageIndex);
   /// dynamicRoutesNavigator.popFor(context, double.infinity);
   /// ```
   void popFor<T>(BuildContext context, int numberOfPagesToPop,
       {required Widget currentPage, T? popResult});
 
-  /// You can push until the last Participator page, or until lastPageCallback with _pushFor_.
+  /// You can push multiple pages at once with _pushFor_.
   ///
   /// This method guarantees that you will never push beyond the last Participator page.
   ///
   /// ```dart
-  ///  Pushes for 4 times.
+  /// // Pushes 4 pages.
+  ///
   /// dynamicRoutesParticipator.pushFor(context, 4);
   ///
-  /// dynamicRoutesParticipator.pushFor();
+  /// // Pushes to the last participator page.
+  /// dynamicRoutesParticipator.pushFor(context, dynamicRoutesParticipator..getProgressFromCurrentPage());
+  ///
+  ///
+  /// // Pushes to the last participator page + invoke [lastPageCallback].
+  /// dynamicRoutesParticipator.pushFor(context, dynamicRoutesParticipator..getProgressFromCurrentPage() + 1);
   /// ```
-  ///
-  /// The method returns a list of Future of results from each of the page; you can await all of them
-  /// like so:
-  ///
-  /// ```dart
-  ///  Assume that we are in the first participator page.
-  /// final results = await Future.wait(dynamicRoutesParticipator.pushFor(context, 3));
-  ///
-  /// print(results); // [resultFromSecond, resultFromThird, resultFromFourth];
-  /// ```
-  ///
-  /// The method is only available to the Participators instances. To use pushFor from an Initiator, use
-  /// _pushFirstThenFor_.
   List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush,
       {required Widget currentPage});
 }
