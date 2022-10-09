@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'base_navigators.dart';
 
+/// This singleton manager is the same for all navigation scopes.
 class ScopedDynamicRoutesManagerSingleton
     extends _ScopedDynamicRoutesManagerImpl {
   static ScopedDynamicRoutesManagerSingleton singletonInstance =
@@ -38,8 +40,8 @@ class _ScopedDynamicRoutesManagerImpl
       assert(
           _dynamicRoutesInstances[widget.hashCode] == null,
           "The participator instance ${widget.hashCode} is already bound to a "
-          "navigation scope. instances and cannot be assigned again until "
-          "the current instances are disposed.");
+          "navigation scope. Participator widgets and cannot be assigned again "
+          "until the their current navigation scope is disposed.");
       _dynamicRoutesInstances[widget.hashCode] = newDynamicRoutesInstance;
 
       _participatorAndInitiatorMap[widget.hashCode] = initiatorWidget;
@@ -63,21 +65,19 @@ class _ScopedDynamicRoutesManagerImpl
     return queriedInstance!;
   }
 
-  /// Initiator actually does not exist...just a participator having its methods
-  /// partially exposed. That's why the Initiator widget needs to call this
-  /// method to dispense it a participator widget.
   @override
-  DynamicRoutesNavigator dispenseParticipatorFromInitiator(
+  DynamicRoutesNavigator dispenseNavigatorFromInitiator(
       Widget initiatorWidget) {
-    final queriedInitiator =
-        _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
-    assert(
-        queriedInitiator != null,
-        "The widget provided is not tied to any _dynamicRoutesInstances."
-        " Did you forget to call initializeRoutes()?");
+    if (kDebugMode) {
+      final queriedInitiator =
+          _initiatorAndParticipatorsMap[initiatorWidget.hashCode];
+      assert(
+          queriedInitiator != null,
+          "The widget provided is not tied to any _dynamicRoutesInstances."
+          " Did you forget to call initializeRoutes()?");
+    }
 
-    final queriedParticipator =
-        _dynamicRoutesInstances[queriedInitiator!.first.hashCode];
+    final queriedParticipator = _dynamicRoutesInstances[initiatorWidget];
 
     return queriedParticipator!;
   }
@@ -134,7 +134,7 @@ abstract class ScopedDynamicRoutesManager {
 
   DynamicRoutesNavigator dispenseNavigatorFromParticipator(Widget widget);
 
-  DynamicRoutesNavigator dispenseParticipatorFromInitiator(Widget initiator);
+  DynamicRoutesNavigator dispenseNavigatorFromInitiator(Widget initiator);
 
   /// Remove reference to all instantiated objects from the_dynamicRoutesInstances
   /// array.

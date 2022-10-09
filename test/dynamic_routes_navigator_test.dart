@@ -9,7 +9,7 @@ import 'testing_utils.dart';
 void main() {
   final MockBuildContext context = MockBuildContext();
 
-  group("Internal test", () {
+  group("Internal tests", () {
     testWidgets(
         "Test initializing a new stack and the initial binding between a widget and the initiator",
         (WidgetTester tester) async {
@@ -29,6 +29,46 @@ void main() {
       expect(
           initiatorWidgetState.dynamicRoutesInitiator.getLoadedPages().length,
           participators.length);
+    });
+
+    testWidgets(
+        "dynamicRoutesInitiator and dynamicRoutesParticipators are "
+        "the same object", (tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(3);
+      final initiator = TestingUtils.generateInitiatorWidget(participators);
+
+      await tester.pumpWidget(initiator);
+      TestingUtils.expectPageExistsAtIndex(-1);
+
+      final initiatorState =
+          TestingUtils.getInitiatorWidgetStateFromKey(tester, initiator.key!);
+
+      await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
+      await tester.pumpAndSettle();
+
+      final firstParticipatorState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators[0].key!);
+
+      await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
+      await tester.pumpAndSettle();
+
+      final secondParticipatorState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators[1].key!);
+
+      await tester.tap(find.byKey(participators[1].pushNextButtonKey!));
+      await tester.pumpAndSettle();
+
+      final thirdParticipatorState = TestingUtils.getParticipatorStateFromKey(
+          tester, participators[2].key!);
+
+      TestingUtils.expectPageExistsAtIndex(2);
+
+      expect(initiatorState.dynamicRoutesInitiator.navigator,
+          firstParticipatorState.dynamicRoutesParticipator.navigator);
+      expect(initiatorState.dynamicRoutesInitiator.navigator,
+          secondParticipatorState.dynamicRoutesParticipator.navigator);
+      expect(initiatorState.dynamicRoutesInitiator.navigator,
+          thirdParticipatorState.dynamicRoutesParticipator.navigator);
     });
 
     group("Before initialization", () {
@@ -132,11 +172,11 @@ void main() {
 
     testWidgets(
         "Calling popCurrent from the same page twice should be the same as calling it once.",
-            (tester) async {
-          //TODO find out first what happens when you do this.
-          // TODO maybe you don't even have to throw an error, just silently
-          // TODO let it go.
-        });
+        (tester) async {
+      //TODO find out first what happens when you do this.
+      // TODO maybe you don't even have to throw an error, just silently
+      // TODO let it go.
+    });
   });
 
   group("Interaction testing", () {
@@ -561,5 +601,9 @@ void main() {
 
       expect(stateToTest.dynamicRoutesParticipator.getCache(), mockCacheData);
     });
+
+    testWidgets(
+        "Once a navigation scope is dispoed, the cache should be cleared",
+        (tester) async {});
   });
 }

@@ -22,7 +22,8 @@ class _InitiatorNavigator
     implements InitiatorNavigator, DynamicRoutesDisposer {
   final _scopedDynamicRoutesManager = ScopedDynamicRoutesManagerSingleton();
 
-  DynamicRoutesNavigator? _initiatorInstance;
+  @visibleForTesting
+  DynamicRoutesNavigator? navigator;
 
   @visibleForTesting
   final Widget initiatorWidget;
@@ -37,21 +38,18 @@ class _InitiatorNavigator
     // //Ensure clean up of the old one, but not the cache.
     dispose(clearCache: false);
 
-    _initiatorInstance =
-        _scopedDynamicRoutesManager.dispenseNewDynamicRoutesInstance(
-            participatorWidgets: pages, initiatorWidget: initiatorWidget);
+    navigator = _scopedDynamicRoutesManager.dispenseNewDynamicRoutesInstance(
+        participatorWidgets: pages, initiatorWidget: initiatorWidget);
 
-    _initiatorInstance!
-        .initializeRoutes(pages, lastPageCallback: lastPageCallback);
+    navigator!.initializeRoutes(pages, lastPageCallback: lastPageCallback);
   }
 
   @override
   Future<T?> pushFirst<T>(BuildContext context) async {
-    assert(
-        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+    assert(navigator != null, "Did you forget to call initializeRoutes?");
 
-    final result = await invokeNext<Future<T?>>(
-        () => _initiatorInstance!.pushFirst(context));
+    final result =
+        await invokeNext<Future<T?>>(() => navigator!.pushFirst(context));
 
     resetDoubleCallGuard();
 
@@ -60,10 +58,9 @@ class _InitiatorNavigator
 
   @override
   List<Widget> getLoadedPages() {
-    assert(
-        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+    assert(navigator != null, "Did you forget to call initializeRoutes?");
 
-    return _initiatorInstance!.getLoadedPages();
+    return navigator!.getLoadedPages();
   }
 
   @override
@@ -85,20 +82,18 @@ class _InitiatorNavigator
   @override
   void setNavigationLogicProvider(
       NavigationLogicProvider navigationLogicProvider) {
-    assert(
-        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+    assert(navigator != null, "Did you forget to call initializeRoutes?");
 
-    _initiatorInstance!.setNavigationLogicProvider(navigationLogicProvider);
+    navigator!.setNavigationLogicProvider(navigationLogicProvider);
   }
 
   @override
   List<Future<T?>> pushFirstThenFor<T>(
       BuildContext context, int numberOfPagesToPush) {
-    assert(
-        _initiatorInstance != null, "Did you forget to call initializeRoutes?");
+    assert(navigator != null, "Did you forget to call initializeRoutes?");
 
-    final List<Future<T?>> results = invokeNext(() => _initiatorInstance!
-            .pushFirstThenFor(context, numberOfPagesToPush)) ??
+    final List<Future<T?>> results = invokeNext(
+            () => navigator!.pushFirstThenFor(context, numberOfPagesToPush)) ??
         [];
 
     resetDoubleCallGuard();
