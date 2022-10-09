@@ -1,4 +1,4 @@
-<a href="https://github.com/khongchai/dynamic_routes/actions"><img src="https://github.com/[USER_NAME]/[REPO_NAME]/workflows/Tests/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/khongchai/dynamic_routes/actions"><img src="https://github.com/khongchai/dynamic_routes/workflows/Tests/badge.svg" alt="Build Status"></a>
 
 # Dynamic Routes
 
