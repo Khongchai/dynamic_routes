@@ -47,9 +47,6 @@ void main() {
       initiatorState.dynamicRoutesInitiator.initializeRoutes(participators);
       initiatorState.dynamicRoutesInitiator
           .setNavigationLogicProvider(navigationLogger);
-      initiatorState.dynamicRoutesInitiator.initializeRoutes(participators);
-      initiatorState.dynamicRoutesInitiator
-          .setNavigationLogicProvider(navigationLogger);
 
       return initiatorState;
     }
