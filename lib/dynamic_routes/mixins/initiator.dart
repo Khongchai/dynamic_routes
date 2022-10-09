@@ -45,8 +45,13 @@ class _InitiatorNavigator
   }
 
   @override
-  Future<T?> pushFirst<T>(BuildContext context) async {
+  Future<T?> pushFirst<T>(BuildContext context,
+      {bool skipDoubleGuardCheck = false}) async {
     assert(navigator != null, "Did you forget to call initializeRoutes?");
+
+    if (skipDoubleGuardCheck) {
+      return navigator!.pushFirst(context);
+    }
 
     final result =
         await invokeNavigation<Future<T?>>(() => navigator!.pushFirst(context));
@@ -89,8 +94,13 @@ class _InitiatorNavigator
 
   @override
   List<Future<T?>> pushFirstThenFor<T>(
-      BuildContext context, int numberOfPagesToPush) {
+      BuildContext context, int numberOfPagesToPush,
+      {bool skipDoubleGuardCheck = false}) {
     assert(navigator != null, "Did you forget to call initializeRoutes?");
+
+    if (skipDoubleGuardCheck) {
+      return navigator!.pushFirstThenFor(context, numberOfPagesToPush);
+    }
 
     final List<Future<T?>> results = invokeNavigation(
             () => navigator!.pushFirstThenFor(context, numberOfPagesToPush)) ??

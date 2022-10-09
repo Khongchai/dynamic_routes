@@ -49,7 +49,12 @@ class _ParticipatorNavigator with DoubleCallGuard {
         currentPage: currentWidget, popResult: result));
   }
 
-  Future<T?> pushNext<T>(BuildContext context) async {
+  Future<T?> pushNext<T>(BuildContext context,
+      {bool skipDoubleGuardCheck = false}) async {
+    if (skipDoubleGuardCheck) {
+      return navigator.pushNext(context, currentPage: currentWidget);
+    }
+
     final result = await invokeNavigation<Future<T?>>(
         () => navigator.pushNext(context, currentPage: currentWidget));
 
@@ -58,7 +63,13 @@ class _ParticipatorNavigator with DoubleCallGuard {
     return result;
   }
 
-  List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush) {
+  List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush,
+      {bool skipDoubleGuardCheck = false}) {
+    if (skipDoubleGuardCheck) {
+      navigator.pushFor(context, numberOfPagesToPush,
+          currentPage: currentWidget);
+    }
+
     final List<Future<T?>> result = invokeNavigation(() => navigator.pushFor(
             context, numberOfPagesToPush,
             currentPage: currentWidget)) ??
