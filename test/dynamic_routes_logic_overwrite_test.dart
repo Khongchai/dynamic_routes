@@ -73,7 +73,7 @@ void main() {
       await tester.tap(find.byKey(pushInitiatorWidgetKey));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       // Initiator pushed
 
@@ -110,7 +110,7 @@ void main() {
 
       expect(customBackCallbackCount, participators.length);
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
     });
   });
 }

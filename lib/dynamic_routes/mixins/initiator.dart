@@ -100,4 +100,17 @@ class _InitiatorNavigator
 
     return results;
   }
+
+  @override
+  void popUntilInitiatorPage<T>(BuildContext context, {T? popResult}) {
+    assert(navigator != null, "Did you forget to call initializeRoutes?");
+
+    // This is before invokeNavigation because this method is meant to be passed
+    // into [lastPageCallback] and [lastPageCallback] can be invoked before the
+    // the futures of all the participator pages complete.
+    resetDoubleCallGuard();
+
+    invokeNavigation(
+        () => navigator!.popUntilInitiatorPage(context, popResult: popResult));
+  }
 }

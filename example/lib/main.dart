@@ -155,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> with DynamicRoutesInitiator {
           onPressed: () {
             dynamicRoutesInitiator.initializeRoutes(_widgets,
                 lastPageCallback: (newContext) {
-              Navigator.popUntil(newContext, (route) => route.isFirst);
+              dynamicRoutesInitiator.popUntilInitiatorPage(context);
             });
 
             dynamicRoutesInitiator.pushFirst(context).then((_) {

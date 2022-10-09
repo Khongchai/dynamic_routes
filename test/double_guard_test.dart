@@ -40,7 +40,7 @@ void main() {
       await TestingUtils.pushInitiatorPageWithFullStateControl(
           initiator: initiator, participators: participators, tester: tester);
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       final initiatorState =
           TestingUtils.getInitiatorWidgetStateFromKey(tester, initiator.key!);
@@ -63,12 +63,12 @@ void main() {
       initiatorState.dynamicRoutesInitiator.pushFirst(initiatorState.context);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectCurrentPageToBe(0);
 
       await tester.tap(find.byKey(participators[0].backButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       expect(navigationLogger.nextCount, 1);
       expect(navigationLogger.backCount, 1);
@@ -82,7 +82,7 @@ void main() {
       initiatorState.dynamicRoutesInitiator.pushFirst(initiatorState.context);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectCurrentPageToBe(0);
 
       final firstParticipatorState = TestingUtils.getParticipatorStateFromKey(
           tester, participators[0].key!);
@@ -98,7 +98,7 @@ void main() {
           .pushNext(firstParticipatorState.context);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(1);
+      TestingUtils.expectCurrentPageToBe(1);
 
       expect(navigationLogger.nextCount, 2);
       expect(navigationLogger.backCount, 0);
@@ -112,7 +112,7 @@ void main() {
       initiatorState.dynamicRoutesInitiator.pushFirst(initiatorState.context);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectCurrentPageToBe(0);
 
       final firstParticipatorState = TestingUtils.getParticipatorStateFromKey(
           tester, participators[0].key!);
@@ -126,7 +126,7 @@ void main() {
           .popCurrent(firstParticipatorState.context);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       expect(navigationLogger.nextCount, 1);
       expect(navigationLogger.nextCount, 1);

@@ -23,7 +23,7 @@ class TestingUtils {
 
   /// Index -1 = initiator page.
   /// Index > -1 = participator pages.
-  static void expectPageExistsAtIndex(int number) {
+  static void expectCurrentPageToBe(int number) {
     expect(find.text(currentPageIndexText + number.toString()), findsOneWidget);
   }
 

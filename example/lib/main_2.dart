@@ -188,6 +188,7 @@ class _WidgetWithNavigatorState extends State<WidgetWithNavigator>
                   onPressed: () {
                     dynamicRoutesInitiator.initializeRoutes(_widgets,
                         lastPageCallback: (newContext) {
+                      dynamicRoutesInitiator.popUntilInitiatorPage(context);
                       setState(() {
                         _displayedWidget = null;
                       });

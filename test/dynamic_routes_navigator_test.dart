@@ -36,7 +36,7 @@ void main() {
       final initiator = TestingUtils.generateInitiatorWidget(participators);
 
       await tester.pumpWidget(initiator);
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       final initiatorState =
           TestingUtils.getInitiatorWidgetStateFromKey(tester, initiator.key!);
@@ -59,7 +59,7 @@ void main() {
       final thirdParticipatorState = TestingUtils.getParticipatorStateFromKey(
           tester, participators[2].key!);
 
-      TestingUtils.expectPageExistsAtIndex(2);
+      TestingUtils.expectCurrentPageToBe(2);
 
       expect(initiatorState.dynamicRoutesInitiator.navigator,
           firstParticipatorState.dynamicRoutesParticipator.navigator);
@@ -159,7 +159,6 @@ void main() {
       expect(() => initiatorWidgetState.dynamicRoutesInitiator.getLoadedPages(),
           throwsAssertionError);
     });
-
   });
 
   group("Interaction testing", () {
@@ -191,19 +190,19 @@ void main() {
       await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectCurrentPageToBe(0);
 
       await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(participators[1].pushNextButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(2);
+      TestingUtils.expectCurrentPageToBe(2);
 
       await tester.tap(find.byKey(participators[2].pushNextButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(3);
+      TestingUtils.expectCurrentPageToBe(3);
     });
 
     testWidgets(
@@ -218,12 +217,12 @@ void main() {
       await tester.tap(find.byKey(initiatorWidget.pushFirstButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectCurrentPageToBe(0);
 
       await tester.tap(find.byKey(participators[0].pushNextButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(1);
+      TestingUtils.expectCurrentPageToBe(1);
 
       await tester.tap(find.byKey(participators[1].backButtonWithValueKey!));
       await tester.pumpAndSettle();
@@ -267,7 +266,7 @@ void main() {
               1);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
     });
 
     testWidgets("popFor behaves correctly.", (WidgetTester tester) async {
@@ -287,7 +286,7 @@ void main() {
       await tester.tap(find.byKey(participators[3].pushNextButtonKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(4);
+      TestingUtils.expectCurrentPageToBe(4);
 
       final fifthParticipatorState = TestingUtils.getParticipatorStateFromKey(
           tester, participators[4].key!);
@@ -298,7 +297,7 @@ void main() {
               .getCurrentPageIndex());
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(0);
+      TestingUtils.expectCurrentPageToBe(0);
 
       final firstParticipatorState = TestingUtils.getParticipatorStateFromKey(
           tester, participators[0].key!);
@@ -306,7 +305,7 @@ void main() {
           .popFor(firstParticipatorState.context, 99999);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
       await tester.pumpAndSettle();
@@ -325,7 +324,7 @@ void main() {
           .popFor(fifthParticipatorState2.context, 3);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(1);
+      TestingUtils.expectCurrentPageToBe(1);
     });
 
     testWidgets("pushFor functions correctly", (tester) async {
@@ -349,17 +348,47 @@ void main() {
           firstPageState.dynamicRoutesParticipator
               .getProgressFromCurrentPage());
       await tester.pumpAndSettle();
-      TestingUtils.expectPageExistsAtIndex(4);
+      TestingUtils.expectCurrentPageToBe(4);
 
       firstPageState.dynamicRoutesParticipator
           .popFor(firstPageState.context, 4);
-      TestingUtils.expectPageExistsAtIndex(4);
+      TestingUtils.expectCurrentPageToBe(4);
 
       firstPageState.dynamicRoutesParticipator
           .pushFor(firstPageState.context, 5);
-      TestingUtils.expectPageExistsAtIndex(4);
+      TestingUtils.expectCurrentPageToBe(4);
 
       expect(initiatorState.isLastPageCallbackCalled, true);
+    });
+
+    testWidgets(
+        "popUntilInitiator should pops pages until the current initiator(the one "
+        "that calls the method)", (tester) async {
+      final participators = TestingUtils.generateParticipatorWidget(5);
+      final initiator = TestingUtils.generateInitiatorWidget(participators);
+
+      final initiatorState =
+          await TestingUtils.pushInitiatorPageWithFullStateControl(
+              initiator: initiator,
+              participators: participators,
+              tester: tester);
+
+      initiatorState.dynamicRoutesInitiator.initializeRoutes(participators,
+          lastPageCallback: (context) {
+        initiatorState.dynamicRoutesInitiator.popUntilInitiatorPage(context);
+      });
+      initiatorState.dynamicRoutesInitiator
+          .pushFirstThenFor(initiatorState.context, participators.length - 1);
+      await tester.pumpAndSettle();
+
+      // Expect last participator page.
+      TestingUtils.expectCurrentPageToBe(4);
+
+      await tester.tap(find.byKey(participators.last.pushNextButtonKey!));
+      await tester.pumpAndSettle();
+
+      // Back to first initiator page again.
+      TestingUtils.expectCurrentPageToBe(-1);
     });
 
     testWidgets(
@@ -423,7 +452,7 @@ void main() {
       await tester.tap(find.byKey(initiator.pushFirstWithForKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(4);
+      TestingUtils.expectCurrentPageToBe(4);
 
       final lastPageState = TestingUtils.getParticipatorStateFromKey(
           tester, participators.last.key!);
@@ -431,13 +460,13 @@ void main() {
           lastPageState.dynamicRoutesParticipator.getCurrentPageIndex() + 1);
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(-1);
+      TestingUtils.expectCurrentPageToBe(-1);
 
       initiatorState.pushForCount = 9999999;
       await tester.tap(find.byKey(initiator.pushFirstWithForKey!));
       await tester.pumpAndSettle();
 
-      TestingUtils.expectPageExistsAtIndex(4);
+      TestingUtils.expectCurrentPageToBe(4);
       expect(initiatorState.isLastPageCallbackCalled, true);
     });
 
@@ -499,7 +528,7 @@ void main() {
         await tester.pumpWidget(initiator);
         await tester.pumpAndSettle();
 
-        TestingUtils.expectPageExistsAtIndex(-1);
+        TestingUtils.expectCurrentPageToBe(-1);
 
         await tester.tap(find.byKey(initiator.pushFirstButtonKey!));
         await tester.pumpAndSettle();
@@ -513,7 +542,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Check that it's the MixedPage.
-        TestingUtils.expectPageExistsAtIndex(2);
+        TestingUtils.expectCurrentPageToBe(2);
 
         final mixedPageState =
             TestingUtils.getMixedWidgetStateFromKey(tester, mixedWidget.key!);
@@ -526,7 +555,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Check that it's the first participator page of the nested set.
-        TestingUtils.expectPageExistsAtIndex(0);
+        TestingUtils.expectCurrentPageToBe(0);
 
         await tester
             .tap(find.byKey(nestedParticipatorsSet[0].pushNextButtonKey!));
@@ -537,7 +566,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Check that it's the second participator page of the base flow.
-        TestingUtils.expectPageExistsAtIndex(1);
+        TestingUtils.expectCurrentPageToBe(1);
         expect(find.text(nestedParticipatorsIdentifier), findsNothing);
         expect(find.text(baseParticipatorsIdentifier), findsOneWidget);
 
