@@ -389,7 +389,7 @@ void initiateDynamicRoutesInstane() {
   });
 
   // Again, make sure this is called after initializeRoutes.
-  dynamicRoutesInitiator.setNavigationLogicProvider();
+  dynamicRoutesInitiator.setNavigationLogicProvider(_customNavigationLogicProvider);
 
   dynamicRoutesInitiator.pushFirst(context);
 }
