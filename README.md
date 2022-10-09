@@ -3,7 +3,7 @@
 # Dynamic Routes
 
 Dynamic Routes is a library that lets you specify in advance which routes should be shown and in
-what order, from just 1 place in your code. This is invaluable for flow management -- when you want some routes to show, or their order swapped, based on some information that you obtain during runtime.
+what order, from just one place in your code. This is invaluable for flow management -- when you want some routes to show, or their order swapped, based on some information that you obtain during runtime.
 
 A good example of such a flow would be a registration flow where, based some information in the database -- whether this user has already registered with your company before, where they live, etc. -- only the required pages are shown. 
 
@@ -72,10 +72,10 @@ class _SomeWidgetState extends State<SomeWidget> with DynamicRoutesParticipator 
 
 ### A bit more about `popCurrent`
 
-`popCurrent` behaves similiarly to using Navigator.of(context).pop for most usecases. 
-Unless really necessary, use `popCurrent` instead.
+`popCurrent` behaves similiarly to using `Navigator.of(context).pop` for most usecases. 
+But unless necessary, use `popCurrent` instead because:
 
-1. `popCurrent`'s implementation is bound to the NavigationLogicProvider, which can be overridden (see the extending navigation logic section).
+1. `popCurrent`'s implementation is bound to the `NavigationLogicProvider`, which can be overridden (see the extending navigation logic section).
 
 2. This will guarantee that the page being popped is the current page.
 In the next section, we'll show how you can do nested navigation with this library. In a
@@ -208,7 +208,7 @@ dynamicRoutesParticipator.pushFor(context, dynamicRoutesParticipator..getProgres
 dynamicRoutesParticipator.pushFor(context, dynamicRoutesParticipator..getProgressFromCurrentPage() + 1);
 ```
 
-The method returns a list of `Future` of results from each of the page; you can await all of them like
+The method returns a list of `Future` of results from each of the pages; you can await all of them like
 so:
 
 ```dart
@@ -222,14 +222,13 @@ setState((){
 })
 ```
 
-The method is only available to the `dynamicRoutesParticipator` instances. For a similar functionality for `dynamicRoutesInitiator`, use _pushFirstThenFor_.
+The method is only available to the `dynamicRoutesParticipator` instances. For a similar functionality for `dynamicRoutesInitiator`, use `pushFirstThenFor`.
 
 ---
 
 ### pushFirstThenFor
 
-This is similar to `pushFor`, but is called from the initiator. Internally, we just call `pushFirst`
-first, then call `pushFor`. All methods of awaiting the results mentioned above apply here as well.
+This is similar to `pushFor`, but is called from the initiator. Internally, it's `pushFirst` + `pushFor` back to back. All methods of awaiting the results mentioned above apply here as well.
 
 ```dart
 dynamicRoutesInitiator.initializeRoutes(...);
@@ -306,8 +305,7 @@ void initState() {
 
 ```
 
-If your concern is the separation of concerns, then this caching is probably not for you and you're
-better off using some dependency injection libraries for your cache.
+---
 
 ## Modifying, extending, or replacing the navigation logic.
 
@@ -396,7 +394,7 @@ void initiateDynamicRoutesInstane() {
 
 ```
 
-### In this second example, we extend the already existing implementation and log to firebase everytime a navigation occurs.
+### In this second example, we extend the already existing implementation and log to firebase every time a navigation occurs.
 
 ```dart
 // Create a new class that extends the implementation of NavigationLogicProvider
