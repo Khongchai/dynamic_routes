@@ -37,12 +37,14 @@ class NavigationLogicProviderImpl implements NavigationLogicProvider {
   const NavigationLogicProviderImpl();
 
   @override
+  @mustCallSuper
   Future<T?> next<T>(NextArguments args) =>
       Navigator.of(args.context).push(MaterialPageRoute(
           settings: RouteSettings(name: args.nextPage.hashCode.toString()),
           builder: (_) => args.nextPage));
 
   @override
+  @mustCallSuper
   void back<T>(BackArguments args) {
     if (args.previousPage != null) {
       // Guarantees to pop all sub-routes, if some exists.

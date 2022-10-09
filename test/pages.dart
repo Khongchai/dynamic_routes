@@ -6,6 +6,39 @@ import 'package:mockito/mockito.dart';
 // Testing the pages here can be done either with the keys or accessing their states
 // directly.
 
+class HomePage extends StatefulWidget {
+  final Key pushInitiatorWidgetKey;
+  final Widget initiatorPage;
+
+  const HomePage(
+      {required this.initiatorPage,
+        required this.pushInitiatorWidgetKey,
+        Key? key})
+      : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(home: Builder(builder: (context) {
+      return TextButton(
+        child: const Text("Push Initiator Widget"),
+        key: widget.pushInitiatorWidgetKey,
+        onPressed: () {
+          // Call this one first to make sure that the navigation page's context
+          // can be used with a navigator.
+          Navigator.of(context).push(MaterialPageRoute(
+            // Won't be using the participatorPages array passed here.
+              builder: (context) => widget.initiatorPage));
+        },
+      );
+    }));
+  }
+}
+
 const valueForPreviousPage = "Mock Value";
 
 const currentPageIndexText = "Current Page Index: ";

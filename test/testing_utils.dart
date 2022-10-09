@@ -85,4 +85,21 @@ class TestingUtils {
       pushFirstButtonKey: pushFirstButtonKey,
     );
   }
+
+  static Future<InitiatorWidgetState> pushInitiatorPageWithFullStateControl({
+    required InitiatorWidget initiator,
+    required List<Widget> participators,
+    required WidgetTester tester,
+  }) async {
+    const pushInitiatorWidgetKey = Key('push_initiator_button');
+    await tester.pumpWidget(HomePage(
+        initiatorPage: initiator,
+        pushInitiatorWidgetKey: pushInitiatorWidgetKey));
+    await tester.tap(find.byKey(pushInitiatorWidgetKey));
+    await tester.pumpAndSettle();
+
+    assert(initiator.key != null);
+
+    return getInitiatorWidgetStateFromKey(tester, initiator.key!);
+  }
 }
