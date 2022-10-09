@@ -23,3 +23,7 @@ Name change and docs edit
 - The first initiator example in the docs was missing a step.
 - Some parts of the docs and the variable names were still referencing the old "StackedRoutes" name.
 - More detailed
+
+## 1.1.1
+
+Docs edit

@@ -355,13 +355,13 @@ class CustomNavigationLogicProvider implements NavigationLogicProvider {
       {required this.customNextCallback, required this.customBackCallback});
 
   @override
-  void back<T>(_) {
-    customBackCallback(previousPage);
+  void back<T>(args) {
+    customBackCallback(args.previousPage);
   }
 
   @override
-  Future<T?> next<T>(_) async {
-    customNextCallback(nextWidget);
+  Future<T?> next<T>(args) async {
+    customNextCallback(args.nextPage);
 
     return null;
   }
@@ -426,6 +426,7 @@ void initiateDynamicRoutesInstance() {
   // Initialize normally
   dynamicRoutesInitiator.initializeRoutes(_widgets,
       lastPageCallback: (newContext) {
+        // Go back to home page.
         Navigator.popUntil(newContext, (route) => route.isFirst);
       });
 
