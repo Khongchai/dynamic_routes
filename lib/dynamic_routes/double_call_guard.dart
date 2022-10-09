@@ -11,54 +11,35 @@ import 'package:flutter/cupertino.dart';
 /// This guard method is here to prevent us from going down the rabbit hole that
 /// is the subjective interpretation of the aforementioned point.
 ///
-/// We will begin by grouping our navigation methods into two groups, forward, and
-/// back.
-///
-/// Once a method from either is invoked, nothing should happen when another method
-/// from the same group is called.
+/// If either of these methods below are called, the call guard will lock the
+/// navigation from happening from the same instance [resetDoubleCallGuard] is
+/// called.
 ///
 /// Forward: [pushNext], [pushFor], [pushFirst], [pushFirstThenFor]
 /// Backward: [popCurrent], [popFor]
+///
+/// The guard will reset when the future from [next] completes.
 mixin DoubleCallGuard {
   @protected
-  bool isNextCalled = false;
+  bool isNavigated = false;
 
   @protected
-  bool isBackCalled = false;
-
-  @protected
-  T? invokeNext<T>(T? Function() nextCallback) {
-    if (isNextCalled) {
+  T? invokeNavigation<T>(T? Function() nextCallback) {
+    if (isNavigated) {
       debugPrint(
-          "⚠️Next invoked more than once on the same Navigator instance before "
-          "a navigation can happen.  ⚠️");
+          "⚠️A navigation method invoked more than once on the same Navigator "
+          "instance the widget can navigate.  ⚠️");
       debugPrint("⚠️We are letting only the first invocation through.  ⚠️");
       return null;
     }
 
-    isNextCalled = true;
+    isNavigated = true;
 
     return nextCallback();
   }
 
   @protected
-  void invokeBack(VoidCallback backCallback) {
-    if (isBackCalled) {
-      debugPrint(
-          "⚠️Back invoked more than once on the same Navigator instance before "
-          "a navigation can happen.  ⚠️");
-      debugPrint("⚠️We are letting only the first invocation through.   ⚠️");
-      return;
-    }
-
-    isBackCalled = true;
-
-    backCallback();
-  }
-
-  @protected
   void resetDoubleCallGuard() {
-    isBackCalled = false;
-    isNextCalled = false;
+    isNavigated = false;
   }
 }

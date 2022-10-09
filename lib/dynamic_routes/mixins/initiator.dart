@@ -49,7 +49,7 @@ class _InitiatorNavigator
     assert(navigator != null, "Did you forget to call initializeRoutes?");
 
     final result =
-        await invokeNext<Future<T?>>(() => navigator!.pushFirst(context));
+        await invokeNavigation<Future<T?>>(() => navigator!.pushFirst(context));
 
     resetDoubleCallGuard();
 
@@ -92,7 +92,7 @@ class _InitiatorNavigator
       BuildContext context, int numberOfPagesToPush) {
     assert(navigator != null, "Did you forget to call initializeRoutes?");
 
-    final List<Future<T?>> results = invokeNext(
+    final List<Future<T?>> results = invokeNavigation(
             () => navigator!.pushFirstThenFor(context, numberOfPagesToPush)) ??
         [];
 

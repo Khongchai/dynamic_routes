@@ -45,12 +45,12 @@ class _ParticipatorNavigator with DoubleCallGuard {
   }
 
   void popCurrent<T>(BuildContext context, [T? result]) {
-    invokeBack(() => navigator.popCurrent(context,
+    invokeNavigation(() => navigator.popCurrent(context,
         currentPage: currentWidget, popResult: result));
   }
 
   Future<T?> pushNext<T>(BuildContext context) async {
-    final result = await invokeNext<Future<T?>>(
+    final result = await invokeNavigation<Future<T?>>(
         () => navigator.pushNext(context, currentPage: currentWidget));
 
     resetDoubleCallGuard();
@@ -59,7 +59,7 @@ class _ParticipatorNavigator with DoubleCallGuard {
   }
 
   List<Future<T?>> pushFor<T>(BuildContext context, int numberOfPagesToPush) {
-    final List<Future<T?>> result = invokeNext(() => navigator.pushFor(
+    final List<Future<T?>> result = invokeNavigation(() => navigator.pushFor(
             context, numberOfPagesToPush,
             currentPage: currentWidget)) ??
         [];
@@ -80,6 +80,9 @@ class _ParticipatorNavigator with DoubleCallGuard {
   }
 
   void popFor(BuildContext context, int amount) {
-    navigator.popFor(context, amount, currentPage: currentWidget);
+    invokeNavigation(
+        () => navigator.popFor(context, amount, currentPage: currentWidget));
+
+    resetDoubleCallGuard();
   }
 }
