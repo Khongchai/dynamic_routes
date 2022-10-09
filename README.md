@@ -1,3 +1,5 @@
+<a href="https://github.com/khongchai/dynamic_routes/actions"><img src="https://github.com/[USER_NAME]/[REPO_NAME]/workflows/Tests/badge.svg" alt="Build Status"></a>
+
 # Dynamic Routes
 
 Dynamic Routes is a library that lets you specify in advance which routes should be shown and in
