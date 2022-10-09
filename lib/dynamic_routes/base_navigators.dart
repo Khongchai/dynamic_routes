@@ -44,8 +44,16 @@ abstract class InitiatorNavigator {
   List<Future<T?>> pushFirstThenFor<T>(
       BuildContext context, int numberOfPagesToPush);
 
+  /// Pops the pages until the current navigator. Use this in the lastPageCallback
+  /// to pop until the initiator page.
+  void popUntilInitiatorPage<T>(BuildContext context, {T? popResult});
+
   List<Widget> getLoadedPages();
 
+  /// Override the current navigation logic.
+  ///
+  /// Note that this override only what happens when [next] is called. This does
+  /// not override the internal state checks.
   void setNavigationLogicProvider(
       NavigationLogicProvider navigationLogicProvider);
 }
@@ -82,7 +90,7 @@ abstract class ParticipatorNavigator {
   /// ex. pushNext(context currentPage: widget);
   Future<T?> pushNext<T>(BuildContext context, {required Widget currentPage});
 
-  /// Pop the current page from the array
+  /// Pop the current page and all of its sub-routes.
   ///
   /// Prefer this over Navigator.of(context).pop for all participators widget.
   void popCurrent<T>(BuildContext context,
@@ -254,7 +262,7 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
   @override
   void initializeRoutes(List<Widget> pages,
-      {Function(BuildContext context)? lastPageCallback, dynamic scopedCache}) {
+      {Function(BuildContext context)? lastPageCallback}) {
     _lastPageCallback = lastPageCallback;
     _pageDataMap = _generatePageStates(pages: pages);
     _isStackLoaded = true;
@@ -262,8 +270,6 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
   Map<int, PageDLLData> _generatePageStates({required List<Widget> pages}) {
     final Map<int, PageDLLData> pageAndDLLDataMap = {};
-
-    _widget = pages.first;
 
     // If there exist a previous page, add yourself as its nextPage, and add the
     // previous page as your previousPage.
@@ -317,8 +323,10 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
 
     final firstPage = _pageDataMap.values.first;
 
+    _widget = firstPage.widget;
+
     return _navigationLogicProvider
-        .next(NextArguments(context: context, nextPage: firstPage.widget));
+        .next(NextArguments(context: context, nextPage: _widget!));
   }
 
   @override
@@ -352,6 +360,28 @@ class DynamicRoutesNavigatorImpl extends DynamicRoutesNavigator {
         currentPage: pageData.widget,
         result: popResult,
         previousPage: _widget));
+  }
+
+  @override
+  void popUntilInitiatorPage<T>(BuildContext context, {T? popResult}) async {
+    assert(
+        _isStackLoaded,
+        "the initializeRoutes() method should be called first before this can "
+        "be used.");
+
+    final bool canPop = _widget != null;
+    if (!canPop) {
+      debugPrint(
+          "There is nothing to pop; pushFirst() has not yet been called");
+      return;
+    }
+
+    final _currentPage = _getCurrentPageDLLData(_widget);
+    final pagesLeftUntilFirstPage =
+        _currentPage.getTraversalSteps(PageDLLTraversalDirection.left);
+
+    popFor(context, pagesLeftUntilFirstPage + 1,
+        currentPage: _currentPage.widget, popResult: popResult);
   }
 
   @override
