@@ -19,6 +19,8 @@ import 'package:flutter/cupertino.dart';
 /// Backward: [popCurrent], [popFor]
 ///
 /// The guard will reset when the future from [next] completes.
+///
+/// [initializeRoutes] does not count as a navigation method and is not guarded.
 mixin DoubleCallGuard {
   @protected
   bool isNavigated = false;
